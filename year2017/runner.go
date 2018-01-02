@@ -15,7 +15,7 @@ func Run(day string) {
 	if v, ok := dayToRun[day]; ok {
 		v()
 	} else {
-		fmt.Printf("%s is valid day in %s", day, Year)
+		fmt.Printf("For %s the given day: %s is invalid", Year, day)
 		fmt.Println()
 	}
 }
