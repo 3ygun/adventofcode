@@ -6,6 +6,7 @@ type dayFunc func()
 
 var dayToRun = map[string]dayFunc{
 	"1": Day1,
+	"2": Day2,
 }
 
 // Year of this runner
