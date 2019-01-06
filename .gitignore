@@ -15,3 +15,9 @@
 
 # Visual Studio Code
 **/debug
+
+# -----------
+# Custom
+
+# Don't included the golang executable
+golang/golang

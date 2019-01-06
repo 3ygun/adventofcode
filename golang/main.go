@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/3ygun/adventofcode/year2017"
+	"github.com/3ygun/adventofcode/golang/year2017"
 )
 
 func main() {
@@ -17,6 +17,7 @@ func main() {
 }
 
 func runWith(year string, day string, all bool) {
+	// Run ./thing -year 2017 -all
 	// fmt.Printf("year: %s\nday: %s\nall: %t\n\n", year, day, all)
 
 	if year != "" && (all || day != "") {
