@@ -16,8 +16,17 @@
 # Visual Studio Code
 **/debug
 
+# Mac
+.DS_Store
+
+# IntelliJ
+.idea
+
 # -----------
 # Custom
 
-# Don't included the golang executable
+# Go lang - ignore the executable
 golang/golang
+
+# Kotlin
+kotlin/out/
