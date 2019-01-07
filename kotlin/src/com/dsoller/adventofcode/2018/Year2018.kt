@@ -11,9 +11,20 @@ object Year2018 : YearRunner {
 
     override fun run(all: Boolean, day: Int) {
         when {
-            all -> days.values.forEach { it() }
-            else -> days[day]?.invoke()
-                ?: throw IllegalArgumentException("Invalid day $day given for year ${this.year()}")
+            all -> {
+                days.entries.forEach {
+                    println("Day ${it.key}")
+                    it.value()
+                }
+            }
+            else -> {
+                days[day]
+                    ?.also {
+                        println("Day $day:")
+                        it()
+                    }
+                    ?: throw IllegalArgumentException("Invalid day $day given for year ${year()}")
+            }
         }
     }
 }
