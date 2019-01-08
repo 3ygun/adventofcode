@@ -1,6 +1,7 @@
 package com.dsoller.adventofcode.`2018`
 
 import com.dsoller.adventofcode.YearRunner
+import kotlin.system.measureNanoTime
 
 object Year2018 : YearRunner {
     override fun year() = 2018
@@ -12,19 +13,24 @@ object Year2018 : YearRunner {
     override fun run(all: Boolean, day: Int) {
         when {
             all -> {
-                days.entries.forEach {
-                    println("Day ${it.key}")
-                    it.value()
-                }
+                days.entries.forEach { printWithDay(it.key, it.value) }
             }
             else -> {
                 days[day]
-                    ?.also {
-                        println("Day $day:")
-                        it()
-                    }
+                    ?.also { printWithDay(day, it) }
                     ?: throw IllegalArgumentException("Invalid day $day given for year ${year()}")
             }
         }
+    }
+
+    private fun printWithDay(
+        day: Int,
+        func: () -> Unit
+    ) {
+        println("Day $day")
+        val took = measureNanoTime {
+            func()
+        }
+        println("Day $day took ${took / 1_000_000.0} ms")
     }
 }
