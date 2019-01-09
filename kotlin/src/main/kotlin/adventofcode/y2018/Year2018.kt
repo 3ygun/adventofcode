@@ -1,6 +1,6 @@
-package com.dsoller.adventofcode.`2018`
+package adventofcode.y2018
 
-import com.dsoller.adventofcode.YearRunner
+import adventofcode.YearRunner
 import kotlin.system.measureNanoTime
 
 object Year2018 : YearRunner {

@@ -1,6 +1,6 @@
-package com.dsoller.adventofcode
+package adventofcode
 
-import com.dsoller.adventofcode.`2018`.Year2018
+import adventofcode.y2018.Year2018
 import kotlin.IllegalArgumentException
 
 fun main(args: Array<String>) {
@@ -24,7 +24,7 @@ fun main(args: Array<String>) {
             Arguments
                 -year YEAR
                     Specify the year to run
-                    (ex: '-year 2018')
+                    (ex: '-year y2018')
 
                 -all
                     Specify that all tests within the year should be run

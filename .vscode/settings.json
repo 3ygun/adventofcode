@@ -1,0 +1,15 @@
+{
+    "java.configuration.updateBuildConfiguration": "disabled",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/.gradle": true,
+        "**/.settings": true,
+        "**/.classpath": true,
+        "**/.project": true,
+        "**/.idea": true
+    }
+}

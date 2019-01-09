@@ -1,4 +1,4 @@
-package com.dsoller.adventofcode
+package adventofcode
 
 interface YearRunner {
     fun year(): Int

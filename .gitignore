@@ -30,3 +30,11 @@ golang/golang
 
 # Kotlin
 kotlin/out/
+kotlin/bin/
+kotlin/build/
+
+# Gradle and Java build
+.gradle/
+.settings/
+.classpath
+.project
