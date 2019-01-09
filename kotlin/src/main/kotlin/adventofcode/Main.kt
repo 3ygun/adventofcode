@@ -13,6 +13,8 @@ fun main(args: Array<String>) {
             ?: throw IllegalArgumentException("Invalid year ${config.year} valid years are: [$years]")
     } catch (e: Exception) {
         println("""
+            ${e.printStackTrace()}
+
             Failed with:
                 $e
 
