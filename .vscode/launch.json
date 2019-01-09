@@ -10,7 +10,6 @@
             "name": "Kotlin Launch",
             "projectRoot": "${workspaceFolder}/kotlin",
             "mainClass": "adventofcode.MainKt",
-            // "mainClass": "MainKt",
             "preLaunchTask": "Gradle Build"
         }
     ]

@@ -10,13 +10,18 @@ buildscript {
 	}
 }
 
+// Because I'm using ./gradlew this specifies the version of Gradle to use when building/launching this project
+// See https://stackoverflow.com/questions/29805622/could-not-find-or-load-main-class-org-gradle-wrapper-gradlewrappermain
+task wrapper(type: Wrapper) {
+	gradleVersion = '4.10.2'
+}
+
 apply plugin: "kotlin"
 apply plugin: "application"
 
 version = '0.1.1'
 
 mainClassName = "adventofcode.MainKt"
-// mainClassName = "MainKt"
 description = "My Application"
 
 sourceCompatibility = 1.8
