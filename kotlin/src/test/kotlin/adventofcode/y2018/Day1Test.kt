@@ -1,13 +1,19 @@
 package adventofcode.y2018
 
-// class StringSpecExample : StringSpec({
-//     "maximum of two numbers" {
-//         // forall(
-//         //     row(1, 5, 5),
-//         //     row(1, 0, 1),
-//         //     row(0, 0, 0)
-//         // ) { a, b, max ->
-//         //     Math.max(a, b) shouldBe max
-//         // }
-//     }
-// })
+import io.kotlintest.data.forall
+import io.kotlintest.shouldBe
+import io.kotlintest.specs.StringSpec
+import io.kotlintest.tables.row
+
+class StringSpecExample : StringSpec({
+     "maximum of two numbers" {
+          forall(
+              row("+1", "+1", "+1", 3),
+              row("+1", "+1", "-2", 0),
+              row("-1", "-2", "-3", -6),
+              row("", "-2", "", -2)
+          ) { a, b, c, frequency ->
+              Day1.star1Calc(listOf(a, b,c)) shouldBe frequency
+          }
+     }
+ })
