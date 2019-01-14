@@ -1,11 +1,14 @@
 package adventofcode.y2018
 
+import adventofcode.Day
 import adventofcode.y2018.data.Day1Data
 
-object Day1 {
-    fun star1() {
+object Day1 : Day {
+    override val day = 1
+
+    override fun star1Run(): String {
         val result = star1Calc(Day1Data.star1())
-        println("Frequency is $result")
+        return "Frequency is $result"
     }
 
     fun star1Calc(input: List<String>): Int {
@@ -14,9 +17,9 @@ object Day1 {
             .sum()
     }
 
-    fun star2() {
+    override fun star2Run(): String {
         val result = star2Calc(Day1Data.star2())
-        println("Frequency is $result")
+        return "Frequency is $result"
     }
 
     fun star2Calc(input: List<String>): Long {
@@ -28,9 +31,6 @@ object Day1 {
         while (!foundFreq.contains(currentVal)) {
             foundFreq.add(currentVal)
             val (index, value) = nextArg(nextIndex, inputs)
-            if (index == 1) {
-                println("Restart. Current Freq [$currentVal] with # of found ${foundFreq.size}")
-            }
             nextIndex = index
             currentVal += value
         }
