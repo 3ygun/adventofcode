@@ -22,32 +22,23 @@ object Day1 : Day {
         return "Frequency is $result"
     }
 
-    fun star2Calc(input: List<String>): Long {
+    fun star2Calc(input: List<String>): Int {
         val inputs: List<Int> = input.map { parseFrequency(it) }
-        var currentVal: Long = 0
-        val foundFreq: MutableList<Long> = ArrayList()
+        var currentVal = 0
+        val foundFreq: MutableSet<Int> = HashSet()
         var nextIndex = 0
+        val inputSize = inputs.size
 
         while (!foundFreq.contains(currentVal)) {
             foundFreq.add(currentVal)
-            val (index, value) = nextArg(nextIndex, inputs)
-            nextIndex = index
-            currentVal += value
+            if (inputSize <= nextIndex) nextIndex = 0
+
+            currentVal += inputs[nextIndex]
+            nextIndex++
         }
 
         return currentVal
     }
-
-    fun nextArg(index: Int, input: List<Int>): Next  {
-        if (input.size <= index) {
-            return nextArg(0, input)
-        }
-
-        val value = input[index]
-        return Next(index + 1, value)
-    }
-
-    data class Next(val index: Int, val value: Int)
 
     @Throws(IllegalArgumentException::class)
     private fun parseFrequency(todo: String): Int {
