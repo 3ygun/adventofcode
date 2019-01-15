@@ -7,7 +7,8 @@ object Year2018 : YearRunner {
     override fun year() = 2018
 
     private val days = mapOf(
-        1 to Day1
+        1 to Day1,
+        2 to Day2
     )
 
     override fun run(all: Boolean, day: Int) {
