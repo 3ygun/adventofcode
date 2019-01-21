@@ -18,25 +18,33 @@ object Day3 : Day {
     }
 
     fun star1Calc(rawInput: List<String>): Int {
-        val inputs = rawInput.map { parsePlot(it) }
-        val image = createBaseImageFromPlots(inputs)
-
-        inputs.map { image.plot(it) }
-
-        // println(image)
-
+        val image = calculateImage(rawInput)
         return image.overlaps()
     }
 
     fun star2Calc(rawInput: List<String>): Int {
-        val inputs = rawInput.map { parsePlot(it) }
-        val image = createBaseImageFromPlots(inputs)
-
-        inputs.map { image.plot(it) }
-
-        // println(image)
-
+        val image = calculateImage(rawInput)
         return image.patchesWithoutOverlap().first()
+    }
+
+    private fun calculateImage(rawInput: List<String>): Image {
+        if (rawInput.isEmpty()) throw IllegalArgumentException("Need some image input!")
+
+        // Parse the plots
+        val plots = rawInput.map { parsePlot(it) }
+
+        // Calculate the length of the sides
+        val maxWidth = plots
+            .map { it.topLeftCorner.x + it.width }
+            .max()!!
+        val maxHeight = plots
+            .map { it.topLeftCorner.y + it.height }
+            .max()!!
+
+        return Image(
+            width = maxWidth,
+            height = maxHeight
+        ).plot(plots)
     }
 
     private val star1RegexParse = Regex("#(\\d+) @ (\\d+),(\\d+): (\\d+)x(\\d+)")
@@ -73,31 +81,13 @@ object Day3 : Day {
         val width: Int,
         val height: Int
     ) {
-        fun hasSpace(): Boolean {
-            return width > 0 && height > 0
-        }
+        fun hasSpace(): Boolean = width > 0 && height > 0
     }
 
     private data class Point(
         val x: Int,
         val y: Int
     )
-
-    private fun createBaseImageFromPlots(inputs: List<Plot>): Image {
-        val maxWidth = inputs
-            .map { it.topLeftCorner.x + it.width }
-            .max()
-
-        val maxHeight = inputs
-            .map { it.topLeftCorner.y + it.height }
-            .max()
-
-        // These should never be null
-        return Image(
-            width = maxWidth!!,
-            height = maxHeight!!
-        )
-    }
 
     private class Image(
         private val data: Array<IntArray>,
@@ -107,14 +97,20 @@ object Day3 : Day {
             width: Int,
             height: Int
         ) : this(Array(height + 1) { IntArray(width + 1) })
+        // ^ Above + 1's make a boarder
+
+        fun plot(plots: List<Plot>): Image {
+            plots.forEach { this.plot(it) }
+            return this
+        }
 
         fun plot(toPlot: Plot) {
             if (!toPlot.hasSpace()) return // Nothing to plot
             patchesWithoutOverlap.add(toPlot.mark)
 
             val corner = toPlot.topLeftCorner
-            for (x in corner.x..(corner.x + toPlot.width - 1)) {
-                for (y in corner.y..(corner.y + toPlot.height - 1)) {
+            for (x in corner.x until (corner.x + toPlot.width)) {
+                for (y in corner.y until (corner.y + toPlot.height)) {
                     set(x, y, toPlot.mark)
                 }
             }
@@ -129,21 +125,17 @@ object Day3 : Day {
             data[y][x] = when (existing) {
                 0 -> mark
                 else -> {
+                    // We've hit an overlap so remove both
                     patchesWithoutOverlap.remove(existing)
                     patchesWithoutOverlap.remove(mark)
-                    -1 // Flag saying multiple things hit
+                    FLAG
                 }
             }
         }
 
         fun overlaps(): Int {
             return data.sumBy { row ->
-                row.sumBy {
-                    when (it) {
-                        -1 -> 1
-                        else -> 0
-                    }
-                }
+                row.sumBy { if (it == FLAG) 1 else 0 }
             }
         }
 
@@ -159,7 +151,7 @@ object Day3 : Day {
                     separator = " ",
                     transform = { i ->
                         when(i) {
-                            -1 -> "-1"
+                            FLAG -> FLAG.toString()
                             else -> " $i"
                         }
                     }
@@ -167,6 +159,10 @@ object Day3 : Day {
             }
 
             return image.toString()
+        }
+
+        companion object {
+            private const val FLAG = -1
         }
     }
 }

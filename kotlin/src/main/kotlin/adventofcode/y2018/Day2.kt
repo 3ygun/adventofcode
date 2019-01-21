@@ -1,7 +1,6 @@
 package adventofcode.y2018
 
 import adventofcode.Day
-import adventofcode.y2018.data.Day1Data
 import adventofcode.y2018.data.Day2Data
 
 object Day2 : Day {
@@ -47,7 +46,8 @@ object Day2 : Day {
         }
 
     override fun star2Run(): String {
-        return star2Calc(Day2Data.star2())
+        val result = star2Calc(Day2Data.star2())
+        return "Unchanged characters $result"
     }
 
     fun star2Calc(input: List<String>): String {
