@@ -1,19 +1,21 @@
 package adventofcode.y2018
 
+import adventofcode.DataLoader
 import adventofcode.Day
-import adventofcode.y2018.data.Day3Data
-import java.lang.IllegalArgumentException
 
 object Day3 : Day {
+    private val STAR1_DATA = DataLoader.readLinesFromFor("/y2018/Day3Star1.txt")
+    private val STAR2_DATA = STAR1_DATA
+
     override val day = 3
 
     override fun star1Run(): String {
-        val result = star1Calc(Day3Data.star1())
+        val result = star1Calc(STAR1_DATA)
         return "Overlap of $result"
     }
 
     override fun star2Run(): String {
-        val result = star2Calc(Day3Data.star2())
+        val result = star2Calc(STAR2_DATA)
         return "Patch without overlap is #$result"
     }
 

@@ -1,12 +1,4 @@
-package adventofcode.y2018.data
-
-object Day4Data {
-    fun star1() = day4Star1.lines()
-
-    fun star2() = day4Star1.lines()
-}
-
-private val day4Star1 = """[1518-08-29 00:24] falls asleep
+[1518-08-29 00:24] falls asleep
 [1518-08-06 00:20] falls asleep
 [1518-03-12 00:21] falls asleep
 [1518-06-17 00:45] wakes up
@@ -991,4 +983,4 @@ private val day4Star1 = """[1518-08-29 00:24] falls asleep
 [1518-07-05 00:51] wakes up
 [1518-06-09 00:16] wakes up
 [1518-04-28 00:43] wakes up
-[1518-07-09 00:38] falls asleep"""
+[1518-07-09 00:38] falls asleep

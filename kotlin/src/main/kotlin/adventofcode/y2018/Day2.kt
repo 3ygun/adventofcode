@@ -1,13 +1,16 @@
 package adventofcode.y2018
 
+import adventofcode.DataLoader
 import adventofcode.Day
-import adventofcode.y2018.data.Day2Data
 
 object Day2 : Day {
+    private val STAR1_DATA = DataLoader.readLinesFromFor("/y2018/Day2Star1.txt")
+    private val STAR2_DATA = DataLoader.readLinesFromFor("/y2018/Day2Star2.txt")
+
     override val day: Int = 2
 
     override fun star1Run(): String {
-        val result = Day2.star1Calc(Day2Data.star1())
+        val result = Day2.star1Calc(STAR1_DATA)
         return "Checksum is $result"
     }
 
@@ -46,7 +49,7 @@ object Day2 : Day {
         }
 
     override fun star2Run(): String {
-        val result = star2Calc(Day2Data.star2())
+        val result = star2Calc(STAR2_DATA)
         return "Unchanged characters $result"
     }
 

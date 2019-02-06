@@ -1,7 +1,7 @@
 package adventofcode.y2018
 
+import adventofcode.DataLoader
 import adventofcode.Day
-import adventofcode.y2018.data.Day4Data
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -10,11 +10,13 @@ object Day4 : Day {
     private val LOG_REGEX = Regex("\\[(.+)\\] (.+)")
     private val SHIFT_BEGINS_REGEX = Regex("Guard #(\\d+) begins shift")
     private val LOG_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+    private val STAR1_DATA = DataLoader.readLinesFromFor("/y2018/Day4Star1.txt")
+    private val STAR2_DATA = STAR1_DATA
 
     override val day: Int = 4
 
     override fun star1Run(): String {
-        val result = star1Calc(Day4Data.star1())
+        val result = star1Calc(STAR1_DATA)
         return "Guard ID ${result.guardId} slept the most and usually at ${result.favoriteMinute} results in: ${result.guardIdTimesFavoriteMinute()}"
     }
 
@@ -29,7 +31,7 @@ object Day4 : Day {
     }
 
     override fun star2Run(): String {
-        val result = star2Calc(Day4Data.star2())
+        val result = star2Calc(STAR2_DATA)
         return "Guard ID ${result.guardId} was mostly slept at ${result.favoriteMinute} results in: ${result.guardIdTimesFavoriteMinute()}"
     }
 

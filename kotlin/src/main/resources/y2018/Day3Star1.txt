@@ -1,13 +1,4 @@
-package adventofcode.y2018.data
-
-object Day3Data {
-    fun star1() = star1Data.lines()
-
-    // Same data
-    fun star2() = star1Data.lines()
-}
-
-private const val star1Data = """#1 @ 596,731: 11x27
+#1 @ 596,731: 11x27
 #2 @ 20,473: 23x22
 #3 @ 730,802: 23x23
 #4 @ 212,725: 28x25
@@ -1273,4 +1264,4 @@ private const val star1Data = """#1 @ 596,731: 11x27
 #1264 @ 950,847: 13x13
 #1265 @ 549,947: 11x18
 #1266 @ 850,773: 23x22
-#1267 @ 95,29: 17x28"""
+#1267 @ 95,29: 17x28
