@@ -8,17 +8,19 @@ import io.kotlintest.tables.row
 class Day4Tests : StringSpec({
     "Day 4, Star 1" {
         forall(
-            row(Day4.GuardIdWithFavoriteMinute(10, 24), star1Input1.lines())
+            row(240, star1Input1.lines()), // GuardId 10, FavoriteMinute 24
+            row(87681, Day4.STAR1_DATA)
         ) { result, input ->
-            Day4.star1Calc(input) shouldBe result
+            Day4.star1Calc(input).guardIdTimesFavoriteMinute() shouldBe result
         }
     }
 
     "Day 4, Star 2" {
         forall(
-            row(Day4.GuardIdWithFavoriteMinute(99, 45), star1Input1.lines())
+            row(4455, star1Input1.lines()), // GuardId 99, FavoriteMinute 45
+            row(136461, Day4.STAR2_DATA)
         ) { result, input ->
-            Day4.star2Calc(input) shouldBe result
+            Day4.star2Calc(input).guardIdTimesFavoriteMinute() shouldBe result
         }
     }
 })

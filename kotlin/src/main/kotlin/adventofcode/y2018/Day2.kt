@@ -4,8 +4,8 @@ import adventofcode.DataLoader
 import adventofcode.Day
 
 object Day2 : Day {
-    private val STAR1_DATA = DataLoader.readLinesFromFor("/y2018/Day2Star1.txt")
-    private val STAR2_DATA = DataLoader.readLinesFromFor("/y2018/Day2Star2.txt")
+    val STAR1_DATA = DataLoader.readLinesFromFor("/y2018/Day2Star1.txt")
+    val STAR2_DATA = DataLoader.readLinesFromFor("/y2018/Day2Star2.txt")
 
     override val day: Int = 2
 

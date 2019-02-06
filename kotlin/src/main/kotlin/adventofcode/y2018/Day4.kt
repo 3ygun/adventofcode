@@ -10,8 +10,8 @@ object Day4 : Day {
     private val LOG_REGEX = Regex("\\[(.+)\\] (.+)")
     private val SHIFT_BEGINS_REGEX = Regex("Guard #(\\d+) begins shift")
     private val LOG_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-    private val STAR1_DATA = DataLoader.readLinesFromFor("/y2018/Day4Star1.txt")
-    private val STAR2_DATA = STAR1_DATA
+    val STAR1_DATA = DataLoader.readLinesFromFor("/y2018/Day4Star1.txt")
+    val STAR2_DATA = STAR1_DATA
 
     override val day: Int = 4
 

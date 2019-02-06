@@ -10,7 +10,8 @@ class Day3Tests : StringSpec({
         forall(
             row(4, listOf("#1 @ 1,3: 4x4", "#2 @ 3,1: 4x4", "#3 @ 5,5: 2x2")),
             row(4, listOf("#1 @ 1,3: 4x4", "#2 @ 3,1: 4x4", "#3 @ 5,5: 0x0")),
-            row(0, listOf("#1 @ 1,3: 2x2", "#2 @ 3,1: 2x2", "#3 @ 5,5: 0x0"))
+            row(0, listOf("#1 @ 1,3: 2x2", "#2 @ 3,1: 2x2", "#3 @ 5,5: 0x0")),
+            row(107043, Day3.STAR1_DATA)
         ) { result, input ->
             Day3.star1Calc(input) shouldBe result
         }
@@ -19,7 +20,8 @@ class Day3Tests : StringSpec({
         forall(
             row(3, listOf("#1 @ 1,3: 4x4", "#2 @ 3,1: 4x4", "#3 @ 5,5: 2x2")),
             row(4, listOf("#1 @ 1,3: 4x4", "#2 @ 3,1: 4x4", "#3 @ 5,5: 0x0", "#4 @ 6,6: 1x1")),
-            row(1, listOf("#1 @ 1,3: 2x2", "#2 @ 3,1: 2x2", "#3 @ 4,2: 1x1"))
+            row(1, listOf("#1 @ 1,3: 2x2", "#2 @ 3,1: 2x2", "#3 @ 4,2: 1x1")),
+            row(346, Day3.STAR2_DATA)
         ) { result, input ->
             Day3.star2Calc(input) shouldBe result
         }
