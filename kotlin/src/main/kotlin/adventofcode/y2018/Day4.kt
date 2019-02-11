@@ -2,6 +2,7 @@ package adventofcode.y2018
 
 import adventofcode.DataLoader
 import adventofcode.Day
+import adventofcode.utils.maxValueAndIndex
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -124,18 +125,11 @@ object Day4 : Day {
         }
 
         fun favoriteMinuteBySleepCount(): GuardIdMinuteAndSleptCount {
-            var maxLast = 0
-            var favoriteMinute = -1
-            sleptMinutesDistribution().forEachIndexed { index, i ->
-                if (i > maxLast) {
-                    maxLast = i
-                    favoriteMinute = index
-                }
-            }
+            val (max, favoriteMinute) = sleptMinutesDistribution().maxValueAndIndex()
             return GuardIdMinuteAndSleptCount(
                 guardId = guardId,
                 minute = favoriteMinute,
-                sleptCount = maxLast
+                sleptCount = max
             )
         }
 
