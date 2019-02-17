@@ -10,9 +10,20 @@ class Day6Tests : StringSpec({
         forall(
             row(17, Day6Star1Data.lines()),
             row(1, star1MinimumArea.lines()),
-            row(4171, Day6.STAR1_DATA) // Solution
+            row(4_171, Day6.STAR1_DATA) // Solution
         ) { result, input ->
             Day6.star1Calc(input) shouldBe result
+        }
+    }
+
+    "Day 6, Star 2" {
+        forall(
+            row(16, 32, Day6Star1Data.lines()),
+            row(90, 100, Day6Star1Data.lines()), // Full board
+            row(1, 9, star1MinimumArea.lines()),
+            row(39_545, Day6.STAR2_MAX_DISTANCE, Day6.STAR2_DATA)
+        ) { result, maxDistance, input ->
+            Day6.star2Calc(input, maxDistance) shouldBe result
         }
     }
 })
