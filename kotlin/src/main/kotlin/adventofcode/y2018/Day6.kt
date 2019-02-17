@@ -2,7 +2,6 @@ package adventofcode.y2018
 
 import adventofcode.DataLoader
 import adventofcode.Day
-import adventofcode.utils.maxValueAndIndex
 
 object Day6 : Day {
     val STAR1_DATA = DataLoader.readLinesFromFor("/y2018/Day6Star1.txt")
@@ -114,55 +113,50 @@ private class Grid private constructor(
             claimTerritory(point.x, point.y, name, distance = 0) ?: continue
 
             // Top Left Corner
-            xTLC@for (x in point.x downTo 0) {
-                for (y in point.y downTo 0) {
-                    if (x == point.x && y == point.y) continue
-
-                    val claim = claimTerritory(x, y, name, distance = ((point.x - x) + (point.y - y)))
-                    if (claim != null) continue
-
-                    if (y == point.y) break@xTLC
-                    break // otherwise we hit the a overflow on y
-                }
-            }
+            claimAllFor(
+                point = point,
+                xRange = point.x downTo 0,
+                yRange = point.y downTo 0
+            ) { x, y -> (point.x - x) + (point.y - y) }
 
             // Top Right Corner
-            xTRC@for (x in point.x until width) {
-                for (y in point.y downTo 0) {
-                    if (x == point.x && y == point.y) continue
-
-                    val claim = claimTerritory(x, y, name, distance = ((x - point.x) + (point.y - y)))
-                    if (claim != null) continue
-
-                    if (y == point.y) break@xTRC
-                    break // otherwise we hit the a overflow on y
-                }
-            }
+            claimAllFor(
+                point = point,
+                xRange = point.x until width,
+                yRange = point.y downTo 0
+            ) { x, y -> (x - point.x) + (point.y - y) }
 
             // Bottom Left Corner
-            xBLC@for (x in point.x downTo 0) {
-                for (y in point.y until height) {
-                    if (x == point.x && y == point.y) continue
-
-                    val claim = claimTerritory(x, y, name, distance = ((point.x - x) + (y - point.y)))
-                    if (claim != null) continue
-
-                    if (y == point.y) break@xBLC
-                    break // otherwise we hit the a overflow on y
-                }
-            }
+            claimAllFor(
+                point = point,
+                xRange = point.x downTo 0,
+                yRange = point.y until height
+            ) { x, y -> (point.x - x) + (y - point.y) }
 
             // Bottom Right Corner
-            xBRC@for (x in point.x until width) {
-                for (y in point.y until height) {
-                    if (x == point.x && y == point.y) continue
+            claimAllFor(
+                point = point,
+                xRange = point.x until width,
+                yRange = point.y until height
+            ) { x, y -> (x - point.x) + (y - point.y) }
+        }
+    }
 
-                    val claim = claimTerritory(x, y, name, distance = ((x - point.x) + (y - point.y)))
-                    if (claim != null) continue
+    private inline fun claimAllFor(
+        point: Point,
+        xRange: IntProgression,
+        yRange: IntProgression,
+        distanceCalc: (Int, Int) -> Int // Passing x, y
+    ) {
+        for (x in xRange) {
+            for (y in yRange) {
+                if (x == point.x && y == point.y) continue
 
-                    if (y == point.y) break@xBRC
-                    break // otherwise we hit the a overflow on y
-                }
+                val claim = claimTerritory(x, y, point.name, distance = distanceCalc(x, y))
+                if (claim != null) continue
+
+                if (y == point.y) return
+                break // otherwise we hit the a overflow on y
             }
         }
     }
