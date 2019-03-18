@@ -14,6 +14,13 @@ class Day7Tests : StringSpec({
             Day7.star1Calc(input) shouldBe result
         }
     }
+    "Day 7, Star 2" {
+        forall(
+            row(15 to "CABFDE", 0, 2, Day7Star1Data.lines())
+        ) { result, scale, workers, input ->
+            Day7.star2Calc(scale, workers, input) shouldBe result
+        }
+    }
 })
 
 private const val Day7Star1Data = """Step C must be finished before step A can begin.
