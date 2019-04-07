@@ -16,11 +16,6 @@ task wrapper(type: Wrapper) {
 	gradleVersion = '4.10.2'
 }
 
-// Note (dsoller) : Don't think this is needed?
-//test {
-//	useJUnitPlatform()
-//}
-
 apply plugin: "kotlin"
 apply plugin: "application"
 
