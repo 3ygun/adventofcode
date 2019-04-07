@@ -18,12 +18,15 @@ object Day7 : Day {
 
     override fun star2Run(): String {
         val result = star2Calc(scale = 60, numWorkers = 5, rawInput = STAR2_DATA)
-        return "Sequence time to sequence:  $result"
+        return "Took ${result.first} time units to compute ${result.second} sequence"
     }
 
     fun star1Calc(rawInput: List<String>): String {
-        val (parents, idToNode) = rawInput.parse()
-        return treverse(idToNode, parents.sorted().toMutableList())
+        return star2Calc(
+            scale = 0,
+            numWorkers = 1,
+            rawInput = rawInput
+        ).second
     }
 
     fun star2Calc(
@@ -34,7 +37,7 @@ object Day7 : Day {
         val (parents, idToNode) = rawInput.parse()
 
         val workers = Workers(scale, numWorkers)
-        val result = star2Treverse(
+        val result = traverse(
             workers = workers,
             canVisit = parents,
             visited = setOf(),
@@ -54,8 +57,8 @@ object Day7 : Day {
             val values = LINE_REGEX.matchEntire(input)?.groupValues
                 ?.takeIf { it.size == 3 }
                 ?: throw IllegalArgumentException("The following line wasn't valid: $input")
-            val id = values[1]
-            val before = values[2]
+            val id = values[1][0]
+            val before = values[2][0]
 
             val childNode = (idToNode[before]
                 ?.also { parents.remove(it.id) }
@@ -72,9 +75,9 @@ object Day7 : Day {
     }
 }
 
-//<editor-fold desc="Star 1">
+//<editor-fold desc="Star completion">
 
-typealias Id = String
+private typealias Id = Char
 
 private data class Node(
     val id: Id,
@@ -92,43 +95,12 @@ private data class Node(
     }
 }
 
-private tailrec fun treverse(
-    idToNode: Map<Id, Node>,
-    travelableIds: MutableList<Id>,
-    result: String = "",
-    visited: MutableSet<Id> = mutableSetOf()
-): String {
-    if (travelableIds.isEmpty()) return result
-
-    val id = travelableIds.first()
-    travelableIds.remove(id)
-    if (visited.contains(id)) {
-        return treverse(idToNode, travelableIds, result, visited)
-    }
-
-    visited.add(id)
-    val nextIds: MutableSet<Id> = idToNode[id]
-        ?.let { node ->
-            node.children
-                .filter { it.parents.subtract(visited).isEmpty() }
-                .map { it.id }
-                .let { travelableIds.union(it).toMutableSet() }
-        }
-        ?: throw IllegalArgumentException("Could not find Node with id $id")
-
-    return treverse(idToNode, nextIds.sorted().toMutableList(), result + id, visited)
-}
-
-//</editor-fold>
-
-//<editor-fold desc="Star 2">
-
 private data class UnitOfWork(
     val workRemaining: Int,
     val id: Id
 ) {
     constructor(id: Id, scale: Int) : this(
-        workRemaining = id[0].toInt() - A_ASCII + scale,
+        workRemaining = id.toInt() - A_ASCII + scale,
         id = id
     )
 
@@ -187,7 +159,7 @@ private class Workers(
     }
 }
 
-private tailrec fun star2Treverse(
+private tailrec fun traverse(
     workers: Workers,
     canVisit: Set<Id>,
     visited: Set<Id>,
@@ -199,13 +171,13 @@ private tailrec fun star2Treverse(
         canVisit.isEmpty() -> if (workers.noWork()) return result // Otherwise fall through
         workers.hasOpenWorkers() -> {
             val remainingCanVisit = workers.assignWork(canVisit)
-            return star2Treverse(workers, remainingCanVisit, visited, idToNode, result)
+            return traverse(workers, remainingCanVisit, visited, idToNode, result)
         }
     }
 
     val justCompleted = workers.step()
     // If no work was completed then next!
-    if (justCompleted.isEmpty()) return star2Treverse(workers, canVisit, visited, idToNode, result)
+    if (justCompleted.isEmpty()) return traverse(workers, canVisit, visited, idToNode, result)
 
     // Work was completed update!
     val nowVisited = visited.union(justCompleted)
@@ -222,7 +194,7 @@ private tailrec fun star2Treverse(
         .also { r -> justCompleted.sorted().forEach { r.append(it) } }
         .toString()
 
-    return star2Treverse(workers, canNowVisit, nowVisited, idToNode, newResult)
+    return traverse(workers, canNowVisit, nowVisited, idToNode, newResult)
 }
 
 //</editor-fold>
