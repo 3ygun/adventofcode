@@ -17,7 +17,7 @@ object Day7 : Day {
     }
 
     override fun star2Run(): String {
-        val result = star2Calc2(scale = 60, numWorkers = 5, rawInput = STAR2_DATA)
+        val result = star2Calc(scale = 60, numWorkers = 5, rawInput = STAR2_DATA)
         return "Sequence time to sequence:  $result"
     }
 
@@ -28,16 +28,21 @@ object Day7 : Day {
 
     fun star2Calc(
         scale: Int,
-        workers: Int,
+        numWorkers: Int,
         rawInput: List<String>
     ): Pair<Int, String> {
         val (parents, idToNode) = rawInput.parse()
 
-        val workers = Workers(amount = workers, scale = scale)
-        treverse(idToNode, parents.toMutableList(), workers)
-        workers.submit(listOf())
+        val workers = Workers(scale, numWorkers)
+        val result = star2Treverse(
+            workers = workers,
+            canVisit = parents,
+            visited = setOf(),
+            idToNode = idToNode,
+            result = ""
+        )
 
-        return workers.totalRuntime to workers.result
+        return workers.timeElasped to result
     }
 
     private fun List<String>.parse(): Pair<MutableSet<Id> /* parents */, MutableMap<Id, Node> /* idToNode */> {
@@ -64,25 +69,6 @@ object Day7 : Day {
         }
 
         return parents to idToNode
-    }
-
-    fun star2Calc2(
-        scale: Int,
-        numWorkers: Int,
-        rawInput: List<String>
-    ): Pair<Int, String> {
-        val (parents, idToNode) = rawInput.parse()
-
-        val workers = Workers2(scale, numWorkers)
-        val result = stuff(
-            workers = workers,
-            canVisit = parents,
-            visited = setOf(),
-            idToNode = idToNode,
-            result = ""
-        )
-
-        return workers.timeElasped to result
     }
 }
 
@@ -137,103 +123,6 @@ private tailrec fun treverse(
 
 //<editor-fold desc="Star 2">
 
-private data class Workers(
-    private val amount: Int,
-    private val scale: Int
-) {
-    private val workers: MutableSet<WorkWithId> = mutableSetOf()
-    var totalRuntime: Int = 0
-        private set
-    var result: String = ""
-        private set
-
-    tailrec fun submit(values: List<Id>) {
-        val available = amount - workers.size
-        assert(available >= 0) { "More workers assigned then available" }
-        if (available != amount) step()
-        when {
-            available == 0 -> submit(values)
-            values.size <= available -> values.forEach { addValue(it) }
-            else -> {
-                val sorted = values.sorted()
-                sorted.subList(0, available).forEach { addValue(it) }
-                return submit(sorted.drop(available))
-            }
-        }
-    }
-
-    private fun addValue(id: Id) {
-        val workLeft = scale + (id[0].toInt() - 'A'.toInt())
-        workers.add(WorkWithId(workLeft, id))
-    }
-
-    private fun step() {
-        val worked = workers.minBy { it.workLeft }?.workLeft
-            ?: throw IllegalArgumentException("Didn't have any workers")
-        val (completed: List<WorkWithId>, _ /* processed */) = workers
-            .map { it.completed(worked); it }
-            .partition { it.workLeft == 0 }
-
-        totalRuntime += worked
-        completed.sorted().forEach { result += it.id }
-        workers.removeIf { it.workLeft == 0 }
-    }
-}
-
-private data class WorkWithId(
-    var workLeft: Int,
-    val id: Id
-): Comparable<WorkWithId> {
-    fun completed(work: Int) {
-        workLeft -= work
-    }
-
-    override fun compareTo(other: WorkWithId): Int = id.compareTo(other.id)
-}
-
-private tailrec fun treverse(
-    idToNode: Map<Id, Node>,
-    travelableIds: MutableList<Id>,
-    workers: Workers,
-    visited: MutableSet<Id> = mutableSetOf()
-) {
-    if (travelableIds.isEmpty()) return
-
-    val justVisited = travelableIds.subtract(visited)
-        .also { toVisit ->
-            workers.submit(toVisit.toList())
-            visited.addAll(toVisit)
-        }
-
-    val next = justVisited.map { id ->
-        idToNode[id]
-            ?.let { node ->
-                node.children
-                    .filter { it.parents.subtract(visited).isEmpty() }
-                    .map { it.id }
-                    .let { travelableIds.union(it).toMutableSet() }
-            }
-            ?: throw IllegalArgumentException("Could not find Node with id $id")
-    }.flatten().toSet()
-
-    return treverse(idToNode, next.sorted().toMutableList(), workers, visited)
-}
-
-data class Computed(
-    val work: Int,
-    val step: Char
-): Comparable<Computed> {
-    override fun compareTo(other: Computed): Int = when {
-        work < other.work -> -1
-        work > other.work -> 1
-        else -> step.compareTo(other.step)
-    }
-}
-
-//</editor-fold>
-
-//<editor-fold desc="Star 2 2">
-
 private data class Thing(
     val workRemaining: Int,
     val id: Id
@@ -248,7 +137,7 @@ private data class Thing(
     }
 }
 
-private class Workers2(
+private class Workers(
     private val scale: Int,
     private val workers: Int
 ) {
@@ -289,7 +178,8 @@ private class Workers2(
         timeElasped ++
         if (work.isEmpty()) return setOf()
 
-        val (completed, nextWork) = work.map { it.copy(workRemaining = it.workRemaining - 1) }
+        val (completed, nextWork) = work
+            .map { it.copy(workRemaining = it.workRemaining - 1) }
             .partition { it.workRemaining <= 0 }
 
         work = nextWork.toSet()
@@ -297,14 +187,14 @@ private class Workers2(
     }
 }
 
-private tailrec fun stuff(
-    workers: Workers2,
+private tailrec fun star2Treverse(
+    workers: Workers,
     canVisit: Set<Id>,
     visited: Set<Id>,
     idToNode: Map<Id, Node>,
     result: String
 ): String {
-//    println("result: $result, currentWork: ${workers.work}")
+    // println("result: $result, currentWork: ${workers.work}")
     return when {
         canVisit.isEmpty() -> {
             if (workers.noWork()) return result
@@ -314,13 +204,13 @@ private tailrec fun stuff(
         workers.noOpenWorkers() -> doWork(workers, canVisit, visited, idToNode, result)
         else -> {
             val remainingCanVisit = workers.assignWork(canVisit)
-            stuff(workers, remainingCanVisit, visited, idToNode, result)
+            star2Treverse(workers, remainingCanVisit, visited, idToNode, result)
         }
     }
 }
 
 private inline fun doWork(
-    workers: Workers2,
+    workers: Workers,
     canVisit: Set<Id>,
     visited: Set<Id>,
     idToNode: Map<Id, Node>,
@@ -328,7 +218,7 @@ private inline fun doWork(
 ): String {
     val justCompleted = workers.step()
     // If no work was completed then next!
-    if (justCompleted.isEmpty()) return stuff(workers, canVisit, visited, idToNode, result)
+    if (justCompleted.isEmpty()) return star2Treverse(workers, canVisit, visited, idToNode, result)
 
     // Work was completed update!
     val nowVisited = visited.union(justCompleted)
@@ -341,12 +231,12 @@ private inline fun doWork(
                     .map { it.id }
             }
             ?: throw IllegalArgumentException("Could not find Node with id $id")
-    }.flatten().toSet().union(canVisit) // Affirm you include any existing stuff
+    }.flatten().toSet().union(canVisit) // Affirm you include any existing star2Treverse
     val newResult = StringBuilder(result)
         .also { r -> justCompleted.sorted().forEach { r.append(it) } }
         .toString()
 
-    return stuff(workers, canNowVisit, nowVisited, idToNode, newResult)
+    return star2Treverse(workers, canNowVisit, nowVisited, idToNode, newResult)
 }
 
 //</editor-fold>

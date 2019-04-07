@@ -23,7 +23,7 @@ class Day7Tests : StringSpec({
             row(15 to "CABFDE", 0, 2, Day7Star1Data.lines()),
             row(1157 to "ABXZLSPCRFHNVEGUYKDIMQTWJO", 60, 5, Day7.STAR2_DATA)
         ) { result, scale, workers, input ->
-            Day7.star2Calc2(scale, workers, input) shouldBe result
+            Day7.star2Calc(scale, workers, input) shouldBe result
         }
     }
 })
