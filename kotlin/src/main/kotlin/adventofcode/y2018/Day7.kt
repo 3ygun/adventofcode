@@ -17,41 +17,67 @@ object Day7 : Day {
     }
 
     override fun star2Run(): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val result = star2Calc(scale = 60, numWorkers = 5, rawInput = STAR2_DATA)
+        return "Took ${result.first} time units to compute ${result.second} sequence"
     }
 
     fun star1Calc(rawInput: List<String>): String {
+        return star2Calc(
+            scale = 0,
+            numWorkers = 1,
+            rawInput = rawInput
+        ).second
+    }
+
+    fun star2Calc(
+        scale: Int,
+        numWorkers: Int,
+        rawInput: List<String>
+    ): Pair<Int, String> {
+        val (parents, idToNode) = rawInput.parse()
+
+        val workers = Workers(scale, numWorkers)
+        val result = traverse(
+            workers = workers,
+            canVisit = parents,
+            visited = setOf(),
+            idToNode = idToNode,
+            result = ""
+        )
+
+        return workers.timeElasped to result
+    }
+
+    private fun List<String>.parse(): Pair<Set<Id> /* parents */, Map<Id, Node> /* idToNode */> {
         val parents: MutableSet<Id> = mutableSetOf()
         val idToNode: MutableMap<Id, Node> = mutableMapOf()
 
         // Parse everything
-        rawInput.forEach { input ->
+        forEach { input ->
             val values = LINE_REGEX.matchEntire(input)?.groupValues
                 ?.takeIf { it.size == 3 }
                 ?: throw IllegalArgumentException("The following line wasn't valid: $input")
-            val id = values[1]
-            val before = values[2]
+            val id: Char = values[1][0]
+            val before: Char = values[2][0]
 
             val childNode = (idToNode[before]
                 ?.also { parents.remove(it.id) }
                 ?: Node(before).also { idToNode[before] = it })
                 .also { it.addParentId(id) }
             val idNode = idToNode[id]
-                ?.let { it.addChild(childNode) }
+                ?.addChild(childNode)
                 ?: Node(id, mutableSetOf(childNode)).also { parents.add(it.id) }
 
             idToNode[id] = idNode
         }
 
-        val result = treverse(idToNode, parents.sorted().toMutableList())
-
-        return result
+        return parents to idToNode
     }
 }
 
-//<editor-fold desc="Star 1">
+//<editor-fold desc="Star completion">
 
-typealias Id = String
+private typealias Id = Char
 
 private data class Node(
     val id: Id,
@@ -69,31 +95,106 @@ private data class Node(
     }
 }
 
-private tailrec fun treverse(
-    idToNode: Map<Id, Node>,
-    travelableIds: MutableList<Id>,
-    result: String = "",
-    visited: MutableSet<Id> = mutableSetOf()
-): String {
-    if (travelableIds.isEmpty()) return result
+private data class UnitOfWork(
+    val workRemaining: Int,
+    val id: Id
+) {
+    constructor(id: Id, scale: Int) : this(
+        workRemaining = id.toInt() - A_ASCII + scale,
+        id = id
+    )
 
-    val id = travelableIds.first()
-    travelableIds.remove(id)
-    if (visited.contains(id)) {
-        return treverse(idToNode, travelableIds, result, visited)
+    companion object {
+         private const val A_ASCII = 'A'.toInt() - 1
+    }
+}
+
+private class Workers(
+    private val scale: Int,
+    private val workers: Int
+) {
+    var timeElasped: Int = 0 // Start before we start counting
+        private set
+    var work: Set<UnitOfWork> = setOf()
+        private set
+
+    fun noWork(): Boolean = work.isEmpty()
+    fun noOpenWorkers(): Boolean = !hasOpenWorkers()
+    fun hasOpenWorkers(): Boolean = openWorkers() > 0
+    private fun openWorkers(): Int = workers - work.size
+
+    /**
+     * @return unassigned newWork
+     */
+    fun assignWork(newWork: Set<Id>): Set<Id> {
+        if (noOpenWorkers()) return newWork
+
+        val sortedWork = newWork.sorted()
+        val open = openWorkers()
+        val numWork = sortedWork.size
+
+        return if (numWork <= open) {
+            work = sortedWork
+                .map { UnitOfWork(it, scale) }
+                .let { work.union(it) }
+            setOf()
+        } else {
+            work = sortedWork.subList(0, open)
+                .map { UnitOfWork(it, scale) }
+                .let { work.union(it) }
+            sortedWork.drop(open).toSet()
+        }
     }
 
-    visited.add(id)
-    val nextIds: MutableSet<Id> = idToNode[id]
-        ?.let { node ->
-            node.children
-                .filter { it.parents.subtract(visited).isEmpty() }
-                .map { it.id }
-                .let { travelableIds.union(it).toMutableSet() }
-        }
-        ?: throw IllegalArgumentException("Could not find Node with id $id")
+    fun step(): Set<Id> {
+        timeElasped ++
+        if (work.isEmpty()) return setOf()
 
-    return treverse(idToNode, nextIds.sorted().toMutableList(), result + id, visited)
+        val (completed, nextWork) = work
+            .map { it.copy(workRemaining = it.workRemaining - 1) }
+            .partition { it.workRemaining <= 0 }
+
+        work = nextWork.toSet()
+        return completed.map { it.id }.toSet()
+    }
+}
+
+private tailrec fun traverse(
+    workers: Workers,
+    canVisit: Set<Id>,
+    visited: Set<Id>,
+    idToNode: Map<Id, Node>,
+    result: String
+): String {
+    // println("result: $result, currentWork: ${workers.work}")
+    when {
+        canVisit.isEmpty() -> if (workers.noWork()) return result // Otherwise fall through
+        workers.hasOpenWorkers() -> {
+            val remainingCanVisit = workers.assignWork(canVisit)
+            return traverse(workers, remainingCanVisit, visited, idToNode, result)
+        }
+    }
+
+    val justCompleted = workers.step()
+    // If no work was completed then next!
+    if (justCompleted.isEmpty()) return traverse(workers, canVisit, visited, idToNode, result)
+
+    // Work was completed update!
+    val nowVisited = visited.union(justCompleted)
+    val canNowVisit = justCompleted.map { id ->
+        idToNode[id]
+            ?.let { node ->
+                node.children
+                    .filter { it.parents.subtract(nowVisited).isEmpty() }
+                    .map { it.id }
+            }
+            ?: throw IllegalArgumentException("Could not find Node with id $id")
+    }.flatten().toSet().union(canVisit) // Affirm you include any existing canVisits
+    val newResult = StringBuilder(result)
+        .also { r -> justCompleted.sorted().forEach { r.append(it) } }
+        .toString()
+
+    return traverse(workers, canNowVisit, nowVisited, idToNode, newResult)
 }
 
 //</editor-fold>
