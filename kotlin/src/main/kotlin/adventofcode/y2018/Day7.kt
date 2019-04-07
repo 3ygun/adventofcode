@@ -48,7 +48,7 @@ object Day7 : Day {
         return workers.timeElasped to result
     }
 
-    private fun List<String>.parse(): Pair<MutableSet<Id> /* parents */, MutableMap<Id, Node> /* idToNode */> {
+    private fun List<String>.parse(): Pair<Set<Id> /* parents */, Map<Id, Node> /* idToNode */> {
         val parents: MutableSet<Id> = mutableSetOf()
         val idToNode: MutableMap<Id, Node> = mutableMapOf()
 
@@ -57,8 +57,8 @@ object Day7 : Day {
             val values = LINE_REGEX.matchEntire(input)?.groupValues
                 ?.takeIf { it.size == 3 }
                 ?: throw IllegalArgumentException("The following line wasn't valid: $input")
-            val id = values[1][0]
-            val before = values[2][0]
+            val id: Char = values[1][0]
+            val before: Char = values[2][0]
 
             val childNode = (idToNode[before]
                 ?.also { parents.remove(it.id) }
