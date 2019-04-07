@@ -2,7 +2,6 @@ package adventofcode.y2018
 
 import adventofcode.DataLoader
 import adventofcode.Day
-import java.util.*
 
 object Day7 : Day {
     val STAR1_DATA = DataLoader.readLinesFromFor("/y2018/Day7Star1.txt")
@@ -64,6 +63,25 @@ object Day7 : Day {
         }
 
         return parents to idToNode
+    }
+
+    fun star2Calc2(
+        scale: Int,
+        numWorkers: Int,
+        rawInput: List<String>
+    ): Pair<Int, String> {
+        val (parents, idToNode) = rawInput.parse()
+
+        val workers = Workers2(scale, numWorkers)
+        val result = stuff(
+            workers = workers,
+            canVisit = parents,
+            visited = setOf(),
+            idToNode = idToNode,
+            result = ""
+        )
+
+        return workers.timeElasped to result
     }
 }
 
@@ -209,6 +227,125 @@ data class Computed(
         work > other.work -> 1
         else -> step.compareTo(other.step)
     }
+}
+
+//</editor-fold>
+
+//<editor-fold desc="Star 2 2">
+
+private data class Thing(
+    val workRemaining: Int,
+    val id: Id
+) {
+    constructor(id: Id, scale: Int) : this(
+        workRemaining = id[0].toInt() - A_ASCII + scale,
+        id = id
+    )
+
+    companion object {
+         private val A_ASCII = 'A'.toInt() - 1
+    }
+}
+
+private class Workers2(
+    private val scale: Int,
+    private val workers: Int
+) {
+    var timeElasped: Int = 0 // Start before we start counting
+        private set
+    var work: Set<Thing> = setOf()
+        private set
+
+    fun noWork(): Boolean = work.isEmpty()
+    fun noOpenWorkers(): Boolean = !hasOpenWorkers()
+    fun hasOpenWorkers(): Boolean = openWorkers() > 0
+    private fun openWorkers(): Int = workers - work.size
+
+    /**
+     * @return unassigned newWork
+     */
+    fun assignWork(newWork: Set<Id>): Set<Id> {
+        if (noOpenWorkers()) return newWork
+
+        val sortedWork = newWork.sorted()
+        val open = openWorkers()
+        val numWork = sortedWork.size
+
+        return if (numWork <= open) {
+            work = sortedWork
+                .map { Thing(it, scale) }
+                .let { work.union(it) }
+            setOf()
+        } else {
+            work = sortedWork.subList(0, open)
+                .map { Thing(it, scale) }
+                .let { work.union(it) }
+            sortedWork.drop(open).toSet()
+        }
+    }
+
+    fun step(): Set<Id> {
+        timeElasped ++
+        if (work.isEmpty()) return setOf()
+
+        val (completed, nextWork) = work.map { it.copy(workRemaining = it.workRemaining - 1) }
+            .partition { it.workRemaining <= 0 }
+
+        work = nextWork.toSet()
+        return completed.map { it.id }.toSet()
+    }
+}
+
+private tailrec fun stuff(
+    workers: Workers2,
+    canVisit: Set<Id>,
+    visited: Set<Id>,
+    idToNode: Map<Id, Node>,
+    result: String
+): String {
+    println("result: $result, currentWork: ${workers.work}")
+    return when {
+        canVisit.isEmpty() -> {
+            if (workers.noWork()) return result
+
+            doWork(workers, canVisit, visited, idToNode, result)
+        }
+        workers.noOpenWorkers() -> doWork(workers, canVisit, visited, idToNode, result)
+        else -> {
+            val remainingCanVisit = workers.assignWork(canVisit)
+            stuff(workers, remainingCanVisit, visited, idToNode, result)
+        }
+    }
+}
+
+private inline fun doWork(
+    workers: Workers2,
+    canVisit: Set<Id>,
+    visited: Set<Id>,
+    idToNode: Map<Id, Node>,
+    result: String
+): String {
+    val justCompleted = workers.step()
+    // If no work was completed then next!
+    if (justCompleted.isEmpty()) return stuff(workers, canVisit, visited, idToNode, result)
+
+    // Work was completed update!
+    val nowVisited = visited.union(justCompleted)
+    val canNowVisit = justCompleted.map { id ->
+        idToNode[id]
+            ?.let { node ->
+                node.children
+                    .filter { it.parents.subtract(nowVisited).isEmpty() }
+                    // TODO : Have to handle currently happening work
+                    .map { it.id }
+            }
+            ?: throw IllegalArgumentException("Could not find Node with id $id")
+    }.flatten().toSet().union(canVisit) // Affirm you include any existing stuff
+    val newResult = StringBuilder(result)
+        .also { r -> justCompleted.sorted().forEach { r.append(it) } }
+        .toString()
+
+    return stuff(workers, canNowVisit, nowVisited, idToNode, newResult)
 }
 
 //</editor-fold>
