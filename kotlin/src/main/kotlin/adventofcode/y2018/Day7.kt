@@ -123,7 +123,7 @@ private tailrec fun treverse(
 
 //<editor-fold desc="Star 2">
 
-private data class Thing(
+private data class UnitOfWork(
     val workRemaining: Int,
     val id: Id
 ) {
@@ -133,7 +133,7 @@ private data class Thing(
     )
 
     companion object {
-         private val A_ASCII = 'A'.toInt() - 1
+         private const val A_ASCII = 'A'.toInt() - 1
     }
 }
 
@@ -143,7 +143,7 @@ private class Workers(
 ) {
     var timeElasped: Int = 0 // Start before we start counting
         private set
-    var work: Set<Thing> = setOf()
+    var work: Set<UnitOfWork> = setOf()
         private set
 
     fun noWork(): Boolean = work.isEmpty()
@@ -163,12 +163,12 @@ private class Workers(
 
         return if (numWork <= open) {
             work = sortedWork
-                .map { Thing(it, scale) }
+                .map { UnitOfWork(it, scale) }
                 .let { work.union(it) }
             setOf()
         } else {
             work = sortedWork.subList(0, open)
-                .map { Thing(it, scale) }
+                .map { UnitOfWork(it, scale) }
                 .let { work.union(it) }
             sortedWork.drop(open).toSet()
         }
@@ -195,27 +195,14 @@ private tailrec fun star2Treverse(
     result: String
 ): String {
     // println("result: $result, currentWork: ${workers.work}")
-    return when {
-        canVisit.isEmpty() -> {
-            if (workers.noWork()) return result
-
-            doWork(workers, canVisit, visited, idToNode, result)
-        }
-        workers.noOpenWorkers() -> doWork(workers, canVisit, visited, idToNode, result)
-        else -> {
+    when {
+        canVisit.isEmpty() -> if (workers.noWork()) return result // Otherwise fall through
+        workers.hasOpenWorkers() -> {
             val remainingCanVisit = workers.assignWork(canVisit)
-            star2Treverse(workers, remainingCanVisit, visited, idToNode, result)
+            return star2Treverse(workers, remainingCanVisit, visited, idToNode, result)
         }
     }
-}
 
-private inline fun doWork(
-    workers: Workers,
-    canVisit: Set<Id>,
-    visited: Set<Id>,
-    idToNode: Map<Id, Node>,
-    result: String
-): String {
     val justCompleted = workers.step()
     // If no work was completed then next!
     if (justCompleted.isEmpty()) return star2Treverse(workers, canVisit, visited, idToNode, result)
@@ -227,11 +214,10 @@ private inline fun doWork(
             ?.let { node ->
                 node.children
                     .filter { it.parents.subtract(nowVisited).isEmpty() }
-                    // TODO : Have to handle currently happening work
                     .map { it.id }
             }
             ?: throw IllegalArgumentException("Could not find Node with id $id")
-    }.flatten().toSet().union(canVisit) // Affirm you include any existing star2Treverse
+    }.flatten().toSet().union(canVisit) // Affirm you include any existing canVisits
     val newResult = StringBuilder(result)
         .also { r -> justCompleted.sorted().forEach { r.append(it) } }
         .toString()
