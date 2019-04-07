@@ -17,7 +17,8 @@ object Day7 : Day {
     }
 
     override fun star2Run(): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val result = star2Calc2(scale = 60, numWorkers = 5, rawInput = STAR2_DATA)
+        return "Sequence time to sequence:  $result"
     }
 
     fun star1Calc(rawInput: List<String>): String {
@@ -303,7 +304,7 @@ private tailrec fun stuff(
     idToNode: Map<Id, Node>,
     result: String
 ): String {
-    println("result: $result, currentWork: ${workers.work}")
+//    println("result: $result, currentWork: ${workers.work}")
     return when {
         canVisit.isEmpty() -> {
             if (workers.noWork()) return result

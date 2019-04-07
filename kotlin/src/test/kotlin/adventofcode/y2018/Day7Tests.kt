@@ -20,7 +20,8 @@ class Day7Tests : StringSpec({
         forall(
             row(0 to "", 0, 1, listOf()),
             row(4 to "CA", 0, 1, listOf("Step C must be finished before step A can begin.")),
-            row(15 to "CABFDE", 0, 2, Day7Star1Data.lines())
+            row(15 to "CABFDE", 0, 2, Day7Star1Data.lines()),
+            row(1157 to "ABXZLSPCRFHNVEGUYKDIMQTWJO", 60, 5, Day7.STAR2_DATA)
         ) { result, scale, workers, input ->
             Day7.star2Calc2(scale, workers, input) shouldBe result
         }
