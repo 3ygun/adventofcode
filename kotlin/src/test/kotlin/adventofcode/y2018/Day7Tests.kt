@@ -16,7 +16,7 @@ class Day7Tests : StringSpec({
             Day7.star1Calc(input) shouldBe result
         }
     }
-    "Day 7, Star 2 Try 2" {
+    "Day 7, Star 2" {
         forall(
             row(0 to "", 0, 1, listOf()),
             row(4 to "CA", 0, 1, listOf("Step C must be finished before step A can begin.")),
