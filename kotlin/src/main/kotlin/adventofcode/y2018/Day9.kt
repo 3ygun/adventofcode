@@ -62,61 +62,26 @@ object Day9 : Day {
                 val board = ArrayList<Int>(lastMarble)
                     .also { it.add(0) } // 1st marble, Avoids divide by zero because board size always > 0
 
-                tailrec fun calculate(
-                    currentMarbleIndex: Int,
-                    player: Int,
-                    index: Int
-                ): Day9Game {
-                    if (index >= lastMarble) return Day9Game(playerScores)
-                    var nextMarbleIndex = currentMarbleIndex
-                    var nextPlayer = player
-                    var nextMarble = index
+                var currentMarbleIndex = 0
+                for (marble in 1..lastMarble) {
+                    if (marble % 23 == 0) {
+                        val player = marble % maxPlayers
 
-                    for (i in index..Math.min(index + 21, lastMarble)) {
-                        nextMarble = i
-                        nextMarbleIndex = ((nextMarbleIndex + 1) % board.size) + 1
-                        board.add(nextMarbleIndex, nextMarble)
+                        val toRemove = currentMarbleIndex - 7
+                        currentMarbleIndex = when {
+                            toRemove < 0 -> board.size + toRemove
+                            else -> toRemove
+                        }
 
-                        // Set next player
-                        nextPlayer = (nextPlayer + 1) % maxPlayers
+                        val popped = board.removeAt(currentMarbleIndex)
+                        playerScores[player] = playerScores[player] + popped + marble
+                    } else {
+                        currentMarbleIndex = ((currentMarbleIndex + 1) % board.size) + 1
+                        board.add(currentMarbleIndex, marble)
                     }
-                    if (nextMarble == lastMarble) return Day9Game(playerScores)
-
-                    var currentScore = playerScores[player]
-                    nextMarble++
-                    currentScore += nextMarble // Add the marble
-                    nextMarble++
-                    val poppedIndex = poppedIndex(nextMarbleIndex, board.size)
-                    val popped = board.removeAt(poppedIndex)
-                    currentScore += popped
-
-                    playerScores[player] = currentScore
-                    nextMarbleIndex = poppedIndex // Because this will always be a valid next insert
-                    nextPlayer = (nextPlayer + 1) % maxPlayers
-
-                    return calculate(
-                        nextMarbleIndex,
-                        nextPlayer,
-                        nextMarble
-                    )
                 }
 
-                return calculate(
-                    currentMarbleIndex = 1,
-                    player = 1,
-                    index = 1
-                )
-            }
-
-            private inline fun poppedIndex(
-                currentMarbleIndex: Int,
-                size: Int
-            ): Int {
-                val toRemove = currentMarbleIndex - 7
-                return when {
-                    toRemove < 0 -> size + toRemove
-                    else -> toRemove
-                }
+                return Day9Game(playerScores)
             }
         }
     }
