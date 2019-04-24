@@ -14,7 +14,8 @@ object Year2018 : YearRunner {
         5 to Day5,
         6 to Day6,
         7 to Day7,
-        8 to Day8
+        8 to Day8,
+        9 to Day9
     )
 
     override fun run(all: Boolean, day: Int) {
