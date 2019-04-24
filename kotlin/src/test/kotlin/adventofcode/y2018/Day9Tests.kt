@@ -8,6 +8,7 @@ import io.kotlintest.tables.row
 class Day9Tests : StringSpec({
     "Day 9, Star 1" {
         forall(
+            row(0L, "1 players; last marble is worth 22 points"),
             row(32L, "9 players; last marble is worth 23 points"),
             row(32L, "9 players; last marble is worth 25 points"),
             row(8317L, "10 players; last marble is worth 1618 points"),
@@ -16,6 +17,13 @@ class Day9Tests : StringSpec({
             row(54718L, "21 players; last marble is worth 6111 points"),
             row(37305L, "30 players; last marble is worth 5807 points"),
             row(382055L, Day9.STAR1_DATA)
+        ) { result, input ->
+            Day9.star1Calc(input) shouldBe result
+        }
+    }
+    "Day 9, Star 2" {
+        forall(
+            row(3133277384L, Day9.STAR2_DATA)
         ) { result, input ->
             Day9.star1Calc(input) shouldBe result
         }

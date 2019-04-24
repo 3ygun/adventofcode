@@ -3,11 +3,10 @@ package adventofcode.y2018
 import adventofcode.Day
 import adventofcode.utils.MaxAndIndex
 import adventofcode.utils.maxValueAndIndex
-import kotlin.collections.ArrayList
 
 object Day9 : Day {
     const val STAR1_DATA = "466 players; last marble is worth 71436 points"
-    const val STAR2_DATA = "466 players; last marble is worth 71436000 points"
+    const val STAR2_DATA = "466 players; last marble is worth 7143600 points"
 
     private val LINE_REGEX = Regex("(?>(\\d+) players; last marble is worth (\\d*) points)")
 
@@ -19,9 +18,8 @@ object Day9 : Day {
     }
 
     override fun star2Run(): String {
-        // val result = star1Calc(STAR2_DATA)
-        // return "highest score: $result"
-        return "I'm too slow currently"
+        val result = star1Calc(STAR2_DATA)
+        return "highest score: $result"
     }
 
     fun star1Calc(rawInput: String): Long {
@@ -59,29 +57,108 @@ object Day9 : Day {
                 val maxPlayers = config.players
                 val lastMarble = config.lastMarble
                 val playerScores = LongArray(maxPlayers)
-                val board = ArrayList<Int>(lastMarble)
-                    .also { it.add(0) } // 1st marble, Avoids divide by zero because board size always > 0
+                // 1st marble, Avoids divide by zero because board size always > 0
+                val board = Circle(Node(0))
+                //println(board)
 
-                var currentMarbleIndex = 0
                 for (marble in 1..lastMarble) {
                     if (marble % 23 == 0) {
                         val player = marble % maxPlayers
-
-                        val toRemove = currentMarbleIndex - 7
-                        currentMarbleIndex = when {
-                            toRemove < 0 -> board.size + toRemove
-                            else -> toRemove
-                        }
-
-                        val popped = board.removeAt(currentMarbleIndex)
+                        val popped = board.counterClockwise(7).pop().value
                         playerScores[player] = playerScores[player] + popped + marble
                     } else {
-                        currentMarbleIndex = ((currentMarbleIndex + 1) % board.size) + 1
-                        board.add(currentMarbleIndex, marble)
+                        board.clockwise().push(Node(marble))
                     }
+
+                    //println(board)
                 }
 
                 return Day9Game(playerScores)
+            }
+
+            private class Circle(
+                node: Node // have to have 1 and don't check well
+            ) {
+                private var first: Node = node // This could be broken later
+                private var current: Node = node.linkToSelf()
+
+                var size: Int = 1
+                    private set
+
+                fun counterClockwise(amount: Int = 1): Circle {
+                    repeat(amount) { current = current.counterClockwise ?: current }
+                    return this
+                }
+
+                fun clockwise(amount: Int = 1): Circle {
+                    repeat(amount) { current = current.clockwise ?: current }
+                    return this
+                }
+
+                /**
+                 * Will make this the current node
+                 */
+                fun push(node: Node): Circle {
+                    node.clockwise = current.clockwise
+                    node.counterClockwise = current
+                    current.clockwise!!.counterClockwise = node
+                    current.clockwise = node
+
+                    current = node
+                    size++
+                    return this
+                }
+
+                /**
+                 * Assigns the new current to [current.clockwise]
+                 *
+                 * @return the [current] value
+                 */
+                fun pop(): Node {
+                    // I didn't care about empty Circles
+                    if (current == current.clockwise) IllegalArgumentException("Cannot pop only element")
+
+                    val result = current
+                    current.counterClockwise!!.clockwise = current.clockwise
+                    current.clockwise!!.counterClockwise = current.counterClockwise
+                    current = current.clockwise!!
+                    size--
+
+                    // Sanitize
+                    result.counterClockwise = null
+                    result.clockwise = null
+                    return result
+                }
+
+                override fun toString(): String {
+                    val builder = StringBuilder()
+                        .append(first)
+
+                    tailrec fun walk(next: Node): String = when {
+                        (next == first) -> builder.toString()
+                        else -> {
+                            builder.append(' ').append(next)
+                            walk(next.clockwise!!)
+                        }
+                    }
+
+                    return walk(first.clockwise!!)
+                }
+            }
+
+            private data class Node(
+                val value: Int,
+                /** Left */
+                var counterClockwise: Node? = null,
+                /** Right */
+                var clockwise: Node? = null
+            ) {
+                fun linkToSelf(): Node = apply {
+                    counterClockwise = this
+                    clockwise = this
+                }
+
+                override fun toString(): String = value.toString()
             }
         }
     }
