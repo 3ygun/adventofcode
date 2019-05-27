@@ -5,18 +5,16 @@ import adventofcode.Day
 
 object Day10 : Day {
     val STAR1 = DataLoader.readLinesFromFor("/y2018/Day10Star1.txt")
-    val STAR2 = ""
+    private const val STAR1_SECONDS: Int = 10519
 
     override val day: Int = 10
 
     override fun star1Run(): String {
-        val result = star1Calc(10519, STAR1)
-        return "The image in the stars is:\n$result\n"
+        val result = star1Calc(STAR1_SECONDS, STAR1)
+        return "The image in the stars is:\n$result"
     }
 
-    override fun star2Run(): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun star2Run(): String = "The image appeared in $STAR1_SECONDS"
 
     /**
      * @return the image after the given number of iterations
@@ -133,7 +131,6 @@ object Day10 : Day {
                 currentY: Int = startingY,
                 board: StringBuilder = StringBuilder()
             ): String {
-                stars.size
                 if (currentStar == null) {
                     return when {
                         nextStar.hasNext() -> boardGen(nextStar, nextStar.next(), currentX, currentY, board)
