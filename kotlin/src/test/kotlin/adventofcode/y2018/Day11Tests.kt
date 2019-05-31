@@ -24,4 +24,13 @@ class Day11Tests : StringSpec({
             Day11.star1Calc(gridSerialNumber) shouldBe result
         }
     }
+    "Day 11, Star 2" {
+        forall(
+            row(Day11.Day11Star2Result(90, 269, 16, 113), 18),
+            row(Day11.Day11Star2Result(232, 251, 12, 119), 42),
+            row(Day11.Day11Star2Result(241, 65, 10, 73), Day11.STAR2)
+        ) { result: Day11.Day11Star2Result, gridSerialNamber: Int ->
+            Day11.star2Calc(gridSerialNamber) shouldBe result
+        }
+    }
 })
