@@ -21,7 +21,7 @@ object Day11 : Day {
     override fun star2Run(): String {
         val result = star2Calc(STAR2)
         // The X,Y coordinate of the top-left fuel cell of the 3x3 square
-        return "The X,Y coordinate is: ${result.tlx},${result.tly},${result.size} (producing total power of ${result.totalPower})"
+        return "The X,Y,Slide coordinate is: ${result.tlx},${result.tly},${result.size} (producing total power of ${result.totalPower})"
     }
 
     internal data class Day11Result(
@@ -117,13 +117,23 @@ object Day11 : Day {
     private fun calculate(y: Int, board: Array<IntArray>): Day11Result {
         var result = Day11Result(0, 0, 0, 0)
         for (x in 299 downTo 0) {
+            // Want to avoid recalculating the old square multiple times
+            var lastSquareResult = 0
             for (side in 1 .. (299 - Math.max(y, x))) {
                 var squareResult = 0
-                for (sy in 0 until side) {
-                    for (sx in 0 until side) {
-                        squareResult += board[y + sy][x + sx]
-                    }
+
+                // Bottom row
+                for (sx in 0 until side) {
+                    squareResult += board[y + side - 1][x + sx]
                 }
+
+                // Vertical column, -1 to avoid counting bottom right corner twice
+                for (sy in 0 until (side - 1)) {
+                    squareResult += board[y + sy][x + side - 1]
+                }
+
+                squareResult += lastSquareResult
+                lastSquareResult = squareResult
 
                 if (result.totalPower < squareResult) {
                     result = Day11Result(x, y, side, squareResult)
