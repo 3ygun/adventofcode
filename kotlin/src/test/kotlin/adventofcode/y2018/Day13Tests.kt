@@ -20,9 +20,8 @@ class Day13Tests : StringSpec({
     "Day 13, Star 2" {
         forall(
             row(2 to 0, DAY13_STAR2_TEST_A),
-            row(6 to 4, DAY13_STAR2_TEST_B)
-//            ,
-//            row(0 to 0, Day13.STAR2)
+            row(6 to 4, DAY13_STAR2_TEST_B),
+            row(68 to 27, Day13.STAR2)
         ) { result: Pair<Int, Int>, input: List<String> ->
             Day13.star2Calc(input) shouldBe result
         }

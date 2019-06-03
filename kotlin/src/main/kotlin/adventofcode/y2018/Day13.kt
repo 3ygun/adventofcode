@@ -23,59 +23,63 @@ object Day13 : Day {
         return try {
             val board = Board.parse(input)
             board.findAndThrowOnCollision()
-            -1 to -1 // Shouldn't get here
         } catch (cartCollision: CartCollision) {
             cartCollision.xy
         }
-//        val board = Board.parse(input)
-//        return board.findAndThrowOnCollision()
     }
 
     internal fun star2Calc(input: List<String>): Pair<Int, Int> {
-        val board = Board.parse(input)
-        return board.findLastCart()
+        return try {
+            val board = Board.parse(input)
+            board.findLastCart()
+        } catch (cartCollision: CartCollision) {
+            cartCollision.xy
+        }
     }
 
     private class Board private constructor(
-        private val carts: List<Cart>,
+        private var carts: List<Cart>,
         private val board: Array<CharArray>
     ) {
-        fun findAndThrowOnCollision() = iterateCarts(carts)
-//        fun findAndThrowOnCollision(): Pair<Int, Int> = iterateCarts(carts)
+        fun findAndThrowOnCollision(): Pair<Int, Int> = iterateUntilFirstColision(carts)
 
-        private tailrec fun iterateCarts(carts: List<Cart>, itter: Int = 0) {
-            //println(toString())
-            println(itter)
-
-            carts.forEach { it.move(board) }
-            return iterateCarts(carts.sorted(), itter + 1)
-        }
-
-//        private tailrec fun iterateCarts(carts: List<Cart>, itter: Int = 0): Pair<Int, Int> {
-//            //println(toString())
-////            println(itter)
-//
-//            val cartMoves: List<CartMoved> = carts.map { it.move2(board) }
-//            val cartCollision = cartMoves.firstOrNull { it.collision }
-//            if (cartCollision != null) return cartCollision.cart.xy
-//
-//            val newCarts = cartMoves
-//                .map { it.cart }
-//                .sorted()
-//
-//            return iterateCarts(newCarts, itter + 1)
-//        }
-
-        fun findLastCart(): Pair<Int, Int> = iterateCartsUntil1(carts)
-
-        private tailrec fun iterateCartsUntil1(carts: List<Cart>, itter: Int = 0): Pair<Int, Int> {
+        private tailrec fun iterateUntilFirstColision(carts: List<Cart>, itter: Int = 0): Pair<Int, Int> {
+//            println(itter)
 //            println(toString())
 
-            val cartMoves: List<CartMoved> = carts.map { it.move2(board) }
+
+            val cartMoves: List<CartMoved> = carts.map { it.move(board) }
+            val cartCollision = cartMoves.firstOrNull { it.collision }
+            if (cartCollision != null) return cartCollision.cart.xy
+
+            val newCarts = cartMoves
+                .map { it.cart }
+                .sorted()
+            this.carts = newCarts
+
+            return iterateUntilFirstColision(newCarts, itter + 1)
+        }
+
+        fun findLastCart(): Pair<Int, Int> = iterateUntilSingleCart(carts)
+
+        private tailrec fun iterateUntilSingleCart(carts: List<Cart>, itter: Int = 0): Pair<Int, Int> {
+//            println(itter)
+//            println(toString())
+
+            val cartMoves: List<CartMoved> = carts.map { it.move(board) }
 
             val removedCarts = cartMoves
                 .filter { it.collision }
-                .map { it.cart }
+                .map {
+                    val cart = it.cart
+                    val (x, y) = cart.xy
+                    if (cart.previousBoardPiece != 'X') board[y][x] = cart.previousBoardPiece
+                    cart
+                }
+//            if (removedCarts.isNotEmpty()) {
+//                println(itter)
+//                println(toString())
+//            }
 
             val finalCarts = cartMoves
                 .filter { !it.collision }
@@ -84,14 +88,15 @@ object Day13 : Day {
                     val collided = removedCarts.any { it.xy == cart.xy }
                     if (collided) {
                         val (x, y) = cart.xy
-                        board[y][x] = cart.previousBoardPiece
+                        if (cart.previousBoardPiece != 'X') board[y][x] = cart.previousBoardPiece
                     }
                     !collided
                 }
+            this.carts = finalCarts
 
             return when {
                 finalCarts.size <= 1 -> finalCarts.first().xy
-                else -> iterateCartsUntil1(finalCarts.sorted(), itter + 1)
+                else -> iterateUntilSingleCart(finalCarts.sorted(), itter + 1)
             }
         }
 
@@ -125,18 +130,11 @@ object Day13 : Day {
     }
 
     private class Cart private constructor(
-        xy: Pair<Int, Int>,
-        direction: Direction,
-        previousBoardPiece: Char
+        val xy: Pair<Int, Int>,
+        val direction: Direction,
+        val previousBoardPiece: Char,
+        private val atIntersection: IntersectionMovement = IntersectionMovement.LEFT
     ) : Comparable<Cart> {
-        var xy: Pair<Int, Int> = xy
-            private set
-        var direction: Direction = direction
-            private set
-        var previousBoardPiece: Char = previousBoardPiece
-            private set
-        private var nextIntersectionMovement: IntersectionMovement = IntersectionMovement.LEFT
-
         constructor(
             xy: Pair<Int, Int>,
             direction: Direction
@@ -152,65 +150,22 @@ object Day13 : Day {
             }
         }
 
-        fun move(board: Array<CharArray>) {
-            board[xy.second][xy.first] = previousBoardPiece
-            val newPos = direction.move(xy)
-            val boardPoint = board[newPos.second][newPos.first]
-            val newDirection = when (boardPoint) {
-                '|' -> direction
-                '-' -> direction
-                '/' -> when (direction) {
-                    Direction.UP -> Direction.RIGHT
-                    Direction.DOWN -> Direction.LEFT
-                    Direction.LEFT -> Direction.DOWN
-                    Direction.RIGHT -> Direction.UP
-                }
-                '\\' -> when (direction) {
-                    Direction.UP -> Direction.LEFT
-                    Direction.DOWN -> Direction.RIGHT
-                    Direction.LEFT -> Direction.UP
-                    Direction.RIGHT -> Direction.DOWN
-                }
-                '+' -> when (nextIntersectionMovement) {
-                    IntersectionMovement.LEFT -> {
-                        nextIntersectionMovement = IntersectionMovement.STRAIT
-                        when (direction) {
-                            Direction.UP -> Direction.LEFT
-                            Direction.DOWN -> Direction.RIGHT
-                            Direction.LEFT -> Direction.DOWN
-                            Direction.RIGHT -> Direction.UP
-                        }
-                    }
-                    IntersectionMovement.STRAIT -> {
-                        nextIntersectionMovement = IntersectionMovement.RIGHT
-                        direction
-                    }
-                    IntersectionMovement.RIGHT -> {
-                        nextIntersectionMovement = IntersectionMovement.LEFT
-                        when (direction) {
-                            Direction.UP -> Direction.RIGHT
-                            Direction.DOWN -> Direction.LEFT
-                            Direction.LEFT -> Direction.UP
-                            Direction.RIGHT -> Direction.DOWN
-                        }
-                    }
-                }
-                '^', 'v', '<', '>' -> throw CartCollision(newPos)
-                else -> throw IllegalArgumentException("Unknown boardPoint $boardPoint at $xy")
-            }
+        fun move(board: Array<CharArray>): CartMoved {
+            // Check if someone ran into us?
+            val (ox, oy) = xy
+            val currentBP = board[oy][ox]
+            if (currentBP == 'X') return CartMoved(true, this) // Yup, someone did :(
 
-            xy = newPos
-            previousBoardPiece = boardPoint
-            direction = newDirection
-            board[newPos.second][newPos.first] = direction.symbol
-        }
+            // We weren't run into, fill in our old location
+            board[oy][ox] = previousBoardPiece
 
-        fun move2(board: Array<CharArray>): CartMoved {
-            board[xy.second][xy.first] = previousBoardPiece
+            // Calculate where we're going and test if we run into someone else
             val newPos = direction.move(xy)
-            val boardPoint = board[newPos.second][newPos.first]
+            val (nx, ny) = newPos
+            val newBoardPiece = board[ny][nx]
             var collision = false
-            val newDirection = when (boardPoint) {
+            var newAtIntersection = atIntersection
+            val newDirection = when (newBoardPiece) {
                 '|' -> direction
                 '-' -> direction
                 '/' -> when (direction) {
@@ -225,9 +180,9 @@ object Day13 : Day {
                     Direction.LEFT -> Direction.UP
                     Direction.RIGHT -> Direction.DOWN
                 }
-                '+' -> when (nextIntersectionMovement) {
+                '+' -> when (atIntersection) {
                     IntersectionMovement.LEFT -> {
-                        nextIntersectionMovement = IntersectionMovement.STRAIT
+                        newAtIntersection = IntersectionMovement.STRAIT
                         when (direction) {
                             Direction.UP -> Direction.LEFT
                             Direction.DOWN -> Direction.RIGHT
@@ -236,11 +191,11 @@ object Day13 : Day {
                         }
                     }
                     IntersectionMovement.STRAIT -> {
-                        nextIntersectionMovement = IntersectionMovement.RIGHT
+                        newAtIntersection = IntersectionMovement.RIGHT
                         direction
                     }
                     IntersectionMovement.RIGHT -> {
-                        nextIntersectionMovement = IntersectionMovement.LEFT
+                        newAtIntersection = IntersectionMovement.LEFT
                         when (direction) {
                             Direction.UP -> Direction.RIGHT
                             Direction.DOWN -> Direction.LEFT
@@ -251,15 +206,24 @@ object Day13 : Day {
                 }
                 '^', 'v', '<', '>' -> {
                     collision = true
-                    direction
+                    direction // We need a direction but don't just say we continue on with the old one
                 }
-                else -> throw IllegalArgumentException("Unknown boardPoint $boardPoint at $xy")
+                else -> throw IllegalArgumentException("Unknown board piece $newBoardPiece at $xy")
             }
 
-            // Will need to handle cleaning up the other part
-            when {
-                collision -> board[newPos.second][newPos.first] = 'X' // To show if something wasn't cleaned up
-                else -> board[newPos.second][newPos.first] = direction.symbol
+            // Handle displaying our position on the board
+            val newFinalBoardPiece = when {
+                collision -> {
+                    // Note that there was a collision here
+                    // Also signals to future pieces in this iteration that we ran into them
+                    board[ny][nx] = 'X'
+                    'X'
+                }
+                else -> {
+                    // We didn't run into anyone so put us on the map and save off the old piece
+                    board[ny][nx] = direction.symbol
+                    newBoardPiece
+                }
             }
 
             return CartMoved(
@@ -267,13 +231,12 @@ object Day13 : Day {
                 cart = Cart(
                     xy = newPos,
                     direction = newDirection,
-                    previousBoardPiece = boardPoint
+                    previousBoardPiece = newFinalBoardPiece,
+                    atIntersection = newAtIntersection
                 )
             )
         }
     }
-
-
 
     private enum class Direction(
         val symbol: Char,
