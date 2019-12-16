@@ -22,6 +22,11 @@ fun main(args: Array<String>) {
                 ./program -year YEAR -all
                 or
                 ./program -year YEAR -day DAY
+                or
+                gradle run --args='-year YEAR -all'
+                or
+                gradle run --args='-year YEAR -day DAY'
+                
 
             Arguments
                 -year YEAR
