@@ -3,7 +3,14 @@ package adventofcode
 import kotlin.system.measureNanoTime
 
 interface Day {
+    /** @return the day of this problem */
     val day: Int
+
+    /** @return should debug printing be enabled? */
+    val debug: Boolean get() = false
+
+    /** Prints the given message based on [debug]'s value */
+    fun debug(message: () -> String) { if (debug) println(message()) }
 
     fun star1Run(): String
 
