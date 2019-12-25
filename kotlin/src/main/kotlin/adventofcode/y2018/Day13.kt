@@ -44,9 +44,8 @@ object Day13 : Day {
         fun findAndThrowOnCollision(): Pair<Int, Int> = iterateUntilFirstColision(carts)
 
         private tailrec fun iterateUntilFirstColision(carts: List<Cart>, itter: Int = 0): Pair<Int, Int> {
-//            println(itter)
-//            println(toString())
-
+            debug { "Iterator: $itter" }
+            debug { toString() /* Board */ }
 
             val cartMoves: List<CartMoved> = carts.map { it.move(board) }
             val cartCollision = cartMoves.firstOrNull { it.collision }
@@ -63,8 +62,8 @@ object Day13 : Day {
         fun findLastCart(): Pair<Int, Int> = iterateUntilSingleCart(carts)
 
         private tailrec fun iterateUntilSingleCart(carts: List<Cart>, itter: Int = 0): Pair<Int, Int> {
-//            println(itter)
-//            println(toString())
+            debug { "Iterator: $itter" }
+            debug { toString() /* Board */ }
 
             val cartMoves: List<CartMoved> = carts.map { it.move(board) }
 
@@ -76,10 +75,11 @@ object Day13 : Day {
                     if (cart.previousBoardPiece != 'X') board[y][x] = cart.previousBoardPiece
                     cart
                 }
-//            if (removedCarts.isNotEmpty()) {
-//                println(itter)
-//                println(toString())
-//            }
+            if (removedCarts.isNotEmpty()) {
+                debug { "Removed Carts was empty!" }
+                debug { "Iterator: $itter" }
+                debug { toString() /* Board */ }
+            }
 
             val finalCarts = cartMoves
                 .filter { !it.collision }

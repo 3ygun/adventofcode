@@ -10,6 +10,7 @@ object Day7 : Day {
     private val LINE_REGEX = Regex("(?>Step (\\w*) must be finished before step (\\w*) can begin\\.)")
 
     override val day: Int = 7
+    // Note : debug wasn't used here
 
     override fun star1Run(): String {
         val result = star1Calc(STAR1_DATA)

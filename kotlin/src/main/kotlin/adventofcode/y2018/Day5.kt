@@ -32,7 +32,7 @@ object Day5 : Day {
             .map { removeJoinedItems(it) }
             .minBy { it.length }!!
 
-//        println("${result.length} or $result")
+        debug { "${result.length} or $result" }
         return result.length
     }
 

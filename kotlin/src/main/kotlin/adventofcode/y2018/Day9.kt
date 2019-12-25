@@ -59,7 +59,7 @@ object Day9 : Day {
                 val playerScores = LongArray(maxPlayers)
                 // 1st marble, Avoids divide by zero because board size always > 0
                 val board = Circle(Node(0))
-                //println(board)
+                debug { board.toString() }
 
                 for (marble in 1..lastMarble) {
                     if (marble % 23 == 0) {
@@ -70,7 +70,7 @@ object Day9 : Day {
                         board.clockwise().push(Node(marble))
                     }
 
-                    //println(board)
+                    debug { board.toString() }
                 }
 
                 return Day9Game(playerScores)

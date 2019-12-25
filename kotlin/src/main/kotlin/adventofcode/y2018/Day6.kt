@@ -27,7 +27,7 @@ object Day6 : Day {
         val points = parsePoints(input)
         val grid = Grid(points)
         grid.populate()
-//        grid.print()
+        if (debug) grid.print()
 
         return grid.largestArea()
     }
@@ -38,8 +38,8 @@ object Day6 : Day {
         val points = parsePoints(input)
         val grid = Grid(points)
         grid.populateAllPointsWithinDistance(maxDistance)
-//        grid.print()
-//        grid.printDistance()
+        if (debug) grid.print()
+        if (debug) grid.printDistance()
 
         return grid.flagged()
     }

@@ -40,10 +40,11 @@ object Day2 : Day {
             val twoOfKind = if (this.containsKey(2)) 1 else 0
             val threeOfKind = if (this.containsKey(3)) 1 else 0
 
-//            val foundFor2 = this[2]
-//            val foundFor3 = this[3]
-//
-//            println("For $input, found for 2 = $foundFor2, found for 3 = $foundFor3")
+            debug {
+                val foundFor2 = this[2]
+                val foundFor3 = this[3]
+                "For $input, found for 2 = $foundFor2, found for 3 = $foundFor3"
+            }
 
             return Pair(twoOfKind, threeOfKind)
         }
@@ -70,7 +71,7 @@ object Day2 : Day {
         val againstChars = against.toCharArray()
 
         var doesNotMatch = 0
-        for (i in 0 until checkingChars.size) {
+        for (i in checkingChars.indices) {
             if (checkingChars[i] != againstChars[i]) {
                 doesNotMatch++
                 if (doesNotMatch > 1) {
@@ -85,11 +86,11 @@ object Day2 : Day {
         val checkingChars = checking.toCharArray()
         val againstChars = against.toCharArray()
 
-//        println("Day 2, Star 2:")
-//        println(checking)
-//        println(against)
+        debug { "Day 2, Star 2:" }
+        debug { checking }
+        debug { against }
 
-        for (i in 0 until checking.length) {
+        for (i in checking.indices) {
             if (checkingChars[i] != againstChars[i]) {
                 return checking.removeRange(i, i+1)
             }

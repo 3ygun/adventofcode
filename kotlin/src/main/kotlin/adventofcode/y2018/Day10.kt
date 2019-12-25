@@ -28,7 +28,9 @@ object Day10 : Day {
 
         repeat(itter) { board.nextItteration() }
 
-        // print(board.toString()); println(); println()
+        debug { board.toString() }
+        debug { "" }
+        debug { "" }
         return board.toString()
     }
 
@@ -150,7 +152,7 @@ object Day10 : Day {
                 if (sX > currentX) board.append(".".repeat(sX - currentX))
 
                 board.append('#')
-                //board.append(index)
+                if (debug) board.append(index)
                 index++
                 return boardGen(nextStar, null, sX+1, sY, board)
             }
