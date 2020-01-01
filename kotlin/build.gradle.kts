@@ -1,4 +1,5 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 // This stuff was mainly based off the generated project from: https://start.ktor.io
 // Commands:
@@ -43,6 +44,11 @@ kotlin.sourceSets["main"].kotlin.srcDirs("main")
 kotlin.sourceSets["test"].kotlin.srcDirs("test")
 sourceSets["main"].resources.srcDirs("resources")
 sourceSets["test"].resources.srcDirs("resources")
+
+// CompileOptions
+// https://kotlinlang.org/docs/reference/using-gradle.html#compiler-options
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions.jvmTarget = "1.8"
 
 // Setup testing
 tasks {

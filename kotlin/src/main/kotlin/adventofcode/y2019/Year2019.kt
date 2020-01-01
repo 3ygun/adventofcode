@@ -8,6 +8,7 @@ object Year2019 : YearRunner {
     override val days = daysMap(
         Day1,
         Day2,
-        Day3
+        Day3,
+        Day4
     )
 }
