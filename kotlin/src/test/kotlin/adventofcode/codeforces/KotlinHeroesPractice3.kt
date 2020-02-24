@@ -47,4 +47,32 @@ class KotlinHeroesPractice3Tests : FreeSpec({
             }
         }
     }
+
+    "Problem D - Bus Video System" - {
+        listOf(
+            row("3 5", "2 1 -3", 3L),
+            row("2 4", "-1 1", 4L),
+            row("4 10", "2 4 1 2", 2L),
+            row("3 10", "-2 -2 -5", 2L),
+            row("1 10", "10", 1L),
+            row("2 10", "9 -10", 1L),
+            row("3 10", "9 -5 -5", 1L),
+            row("4 10", "-2 -2 -5 9", 2L),
+            row("4 10", "9 -5 6 -10", 1L),
+            row("4 12", "9 -5 3 -7", 4L),
+            row("1 99", "-99", 1L),
+            row("5 99", "0 0 0 0 0", 100L),
+            row("2 99", "-55 -43", 2L),
+            row("2 100", "-50 1", 51L),
+            row("1 10", "-100", 0L),
+            row("1 10", "100", 0L),
+            row("4 10", "-1 -9 -7 10", 0L),
+            row("5 10", "5 -1 -9 -7 10", 0L),
+            row("3 10", "1 2", 0L)
+        ).map { (bus, changes, expected) ->
+            "Bus Inputs: '$bus', Changes: '$changes', Expecting: $expected" {
+                KotlinHeroesPractice3.problemD(bus, changes) shouldBe expected
+            }
+        }
+    }
 })

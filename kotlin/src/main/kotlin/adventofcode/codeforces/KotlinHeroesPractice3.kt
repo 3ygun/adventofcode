@@ -1,5 +1,9 @@
 package adventofcode.codeforces
 
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
+
 object KotlinHeroesPractice3 {
     // <editor-fold desc="Problem A - Restoring Three Numbers">
 
@@ -105,6 +109,50 @@ object KotlinHeroesPractice3 {
             }
         }
         return removed
+    }
+
+    // </editor-fold>
+    // <editor-fold desc="Problem D - Bus Video System">
+
+    /*
+    fun main() {
+        val bus = readLine()!!
+        val inputs = readLine()!!
+
+        val result = problemD(bus, inputs)
+        println(result)
+    }
+     */
+    /** https://codeforces.com/contest/1298/problem/D */
+    fun problemD(
+        bus: String,
+        inputChanges: String
+    ): Long {
+        // TODO : Supposedly this doesn't work
+
+        val (stops, maxPeople) = bus
+            .split(regex = " ".toRegex())
+            .map(String::toLong)
+            .let { it[0] to it[1] }
+        val changes = inputChanges
+            .split(regex = " ".toRegex())
+            .map(String::toLong)
+
+        val seenPeople = mutableListOf<Long>(0)
+        for (change in changes) {
+            val last = seenPeople.lastOrNull() ?: 0L
+            seenPeople.add(last + change)
+        }
+        val maximum = kotlin.math.max(seenPeople.max()!!, 0L)
+        val minimum = kotlin.math.min(seenPeople.min()!!, 0L)
+            .let { if (it < 0L) kotlin.math.abs(it) else 0L }
+
+        return when {
+            stops.toInt() != changes.size -> 0L
+            maxPeople < minimum -> 0L
+            maxPeople < maximum -> 0L
+            else -> maxPeople - maximum - minimum + 1L
+        }
     }
 
     // </editor-fold>
