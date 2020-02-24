@@ -35,4 +35,16 @@ class KotlinHeroesPractice3Tests : FreeSpec({
             }
         }
     }
+
+    "Problem C - File Name" - {
+        listOf(
+            row("xxxiii", 1),
+            row("xxoxx", 0),
+            row("xxxxxxxxxx", 8)
+        ).map { (input, expected) ->
+            "Expected removal $expected from: $input" {
+                KotlinHeroesPractice3.problemC(input) shouldBe expected
+            }
+        }
+    }
 })

@@ -82,4 +82,30 @@ object KotlinHeroesPractice3 {
     }
 
     // </editor-fold>
+    // <editor-fold desc="Problem C - File Name">
+
+    /*
+    fun main() {
+        val numInputs = readLine()!!
+        val inputs = readLine()!!
+
+        val result = problemC(inputs)
+        println(result)
+    }
+     */
+    /** https://codeforces.com/contest/1298/problem/C */
+    fun problemC(input: String): Int {
+        var removed = 0
+        val array = input.toCharArray()
+        for (i in 0 until (array.size - 2)) {
+            if ('x' == array[i] &&
+                    'x' == array[i+1] &&
+                    'x' == array[i+2]) {
+                removed ++
+            }
+        }
+        return removed
+    }
+
+    // </editor-fold>
 }
