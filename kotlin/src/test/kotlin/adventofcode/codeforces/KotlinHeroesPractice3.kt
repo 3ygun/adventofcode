@@ -1,6 +1,7 @@
 package adventofcode.codeforces
 
 import io.kotlintest.should
+import io.kotlintest.shouldBe
 import io.kotlintest.specs.FreeSpec
 import io.kotlintest.tables.row
 
@@ -17,6 +18,20 @@ class KotlinHeroesPractice3Tests : FreeSpec({
             "$input to $output" {
                 val (x1, x2, x3, x4) = input
                 KotlinHeroesPractice3.problemA(x1, x2, x3, x4) should { it == output.toList() }
+            }
+        }
+    }
+
+    "Problem B - Remove Duplicates" - {
+        listOf(
+            row("6", "1 5 5 1 6 1", "3", "5 6 1"),
+            row("5", "2 4 2 4 4", "2", "2 4"),
+            row("5", "6 6 6 6 6", "1", "6")
+        ).map { (numInputs, input, numOutputs, output) ->
+            "From: '$input' To: '$output'" {
+                val (numResult, result) = KotlinHeroesPractice3.problemB(numInputs, input)
+                numResult shouldBe numOutputs
+                result shouldBe output
             }
         }
     }

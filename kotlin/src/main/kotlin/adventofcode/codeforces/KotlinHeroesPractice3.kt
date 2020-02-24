@@ -1,27 +1,26 @@
 package adventofcode.codeforces
 
 object KotlinHeroesPractice3 {
-    /**
-     * https://codeforces.com/contest/1298/problem/A
+    // <editor-fold desc="Problem A - Restoring Three Numbers">
+
+    /*
+    fun main() {
+        val inputs = readLine()!!
+            .split(regex = " ".toRegex())
+            .map { it.toLong() }
+            .toSet()
+
+        val (a, b, c) = problemA(inputs)
+        println("$a $b $c")
+    }
      */
+    /** https://codeforces.com/contest/1298/problem/A */
     fun problemA(
         x1: Long,
         x2: Long,
         x3: Long,
         x4: Long
     ): List<Long> {
-        /*
-        fun main() {
-            val inputs = readLine()!!
-                .split(regex = " ".toRegex())
-                .map { it.toLong() }
-                .toSet()
-
-            val (a, b, c) = KotlinHeroesPractice3.problemA(inputs)
-            println("$a $b $c")
-        }
-         */
-
         val inputs = setOf(x1, x2, x3, x4)
         return problemA(inputs)
             .also { println(it) }
@@ -46,4 +45,41 @@ object KotlinHeroesPractice3 {
 
         return Triple(a, b, c)
     }
+
+    // </editor-fold>
+    // <editor-fold desc="Problem B - Remove Duplicates">
+
+    /*
+    fun main() {
+        val numInputs = readLine()!!
+        val inputs = readLine()!!
+
+        val (numResults, result) = problemB(numInputs, inputs)
+        println(numResults)
+        println(result)
+    }
+     */
+    /** https://codeforces.com/contest/1298/problem/B */
+    fun problemB(
+        numInputs: String,
+        input: String
+    ): Pair<String, String> {
+        val expectedNum = numInputs.toInt()
+        val parsed = input
+            .split(regex = " ".toRegex())
+            .map(String::toInt)
+        require(parsed.size == expectedNum) { "Didn't parse input correctly: '$input' got: $parsed" }
+
+        var x = 0
+        val result = parsed
+            .associateBy({ it }) { val r = x; x ++; r }
+            .toList()
+            .sortedBy { it.second }
+            .map { it.first }
+        val num = result.size
+        val printed = result.joinToString(separator = " ")
+        return num.toString() to printed
+    }
+
+    // </editor-fold>
 }
