@@ -136,8 +136,11 @@ object Day3 : Day {
         }
 
         fun overlaps(): Int {
-            return data.sumBy { row ->
-                row.sumBy { if (it == FLAG) 1 else 0 }
+            return data.sumOf { row ->
+                row.sumOf {
+                    val x: Int = if (it == FLAG) 1 else 0
+                    x
+                }
             }
         }
 
@@ -149,7 +152,7 @@ object Day3 : Day {
             val image = StringBuilder()
 
             data.forEach { x ->
-                image.appendln(x.joinToString(
+                image.appendLine(x.joinToString(
                     separator = " ",
                     transform = { i ->
                         when(i) {

@@ -1,9 +1,9 @@
 package adventofcode.codeforces
 
-import io.kotlintest.should
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.FreeSpec
-import io.kotlintest.tables.row
+import io.kotest.core.spec.style.FreeSpec
+import io.kotest.data.row
+import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 
 class KotlinHeroesPractice3Tests : FreeSpec({
     "Problem A - Restoring Three Numbers" - {

@@ -1,8 +1,8 @@
 package adventofcode.y2018
 
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.FunSpec
-import io.kotlintest.tables.row
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.data.row
+import io.kotest.matchers.shouldBe
 
 class Day13Tests : FunSpec({
     listOf(

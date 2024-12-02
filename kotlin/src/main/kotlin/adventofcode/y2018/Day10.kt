@@ -143,7 +143,7 @@ object Day10 : Day {
                 val (sX, sY) = currentStar.position
                     .let { (sX, sY) -> (sX + minX) to (sY + minY) }
                 if (sY > currentY) {
-                    board.appendln(".".repeat(maxX - currentX))
+                    board.appendLine(".".repeat(maxX - currentX))
                     return boardGen(nextStar, currentStar, startingX, currentY + 1, board)
                 }
 

@@ -1,5 +1,4 @@
-import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.kotlin.dsl.*
 
 // This stuff was mainly based off the generated project from: https://start.ktor.io
 // Commands:
@@ -10,19 +9,19 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 // These are set in gradle.properties
 val kotlin_version: String by project // Need to update in file and in the `plugins` section
 val kotlinCoroutinesVersion: String by project
-val kotlintestVersion: String by project
+val kotestVersion: String by project
 
 plugins {
-	application
-	kotlin("jvm") version "1.3.61"
+	id("application")
+	kotlin("jvm").version("2.1.0")
 }
 
 group = "adventofcode"
-version = "0.1.1"
+version = "0.2.0"
 description = "Advent of Code Challenges"
 
 application {
-	mainClassName = "adventofcode.MainKt"
+	mainClass = "adventofcode.MainKt"
 }
 
 repositories {
@@ -31,42 +30,42 @@ repositories {
 }
 
 dependencies {
-	implementation(kotlin("stdlib-jdk8"))
+	implementation(kotlin("stdlib"))
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
 
 	testImplementation(kotlin("test"))
-	testImplementation(kotlin("test-junit"))
-	testImplementation("io.kotlintest:kotlintest-runner-junit5:$kotlintestVersion")
+	testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
 }
 
-// Source Sets
-kotlin.sourceSets["main"].kotlin.srcDirs("main")
-kotlin.sourceSets["test"].kotlin.srcDirs("test")
-sourceSets["main"].resources.srcDirs("resources")
-sourceSets["test"].resources.srcDirs("resources")
+kotlin {
+	jvmToolchain(21)
+}
 
 // CompileOptions
 // https://kotlinlang.org/docs/reference/using-gradle.html#compiler-options
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions.jvmTarget = "1.8"
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
+    jvmTargetValidationMode.set(org.jetbrains.kotlin.gradle.dsl.jvm.JvmTargetValidationMode.WARNING)
+}
 
 // Setup testing
-tasks {
-	test {
-		testLogging.showExceptions = true
-		useJUnitPlatform()
-
-		reports {
-			junitXml.isEnabled = false
-			html.isEnabled = true
-		}
-
-		// On "gradle clean test" prints the test name that hits the following events
-		// Otherwise you need to look at some file?
-		testLogging {
-			// events.add(TestLogEvent.PASSED)
-			events.add(TestLogEvent.SKIPPED)
-			events.add(TestLogEvent.FAILED)
-		}
-	}
+tasks.withType<Test>().configureEach {
+	useJUnitPlatform()
 }
+//	test {
+//		testLogging.showExceptions = true
+//		useJUnitPlatform()
+//
+//		reports {
+//			junitXml.isEnabled = false
+//			html.isEnabled = true
+//		}
+//
+//		// On "gradle clean test" prints the test name that hits the following events
+//		// Otherwise you need to look at some file?
+//		testLogging {
+//			// events.add(TestLogEvent.PASSED)
+//			events.add(TestLogEvent.SKIPPED)
+//			events.add(TestLogEvent.FAILED)
+//		}
+//	}
+//}

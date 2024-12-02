@@ -1,13 +1,13 @@
 package adventofcode.y2018
 
-import io.kotlintest.data.forall
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.StringSpec
-import io.kotlintest.tables.row
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.data.forAll
+import io.kotest.data.row
+import io.kotest.matchers.shouldBe
 
 class Day4Tests : StringSpec({
     "Day 4, Star 1" {
-        forall(
+        forAll(
             row(240, star1Input1.lines()), // GuardId 10, FavoriteMinute 24
             row(87681, Day4.STAR1_DATA)
         ) { result, input ->
@@ -16,7 +16,7 @@ class Day4Tests : StringSpec({
     }
 
     "Day 4, Star 2" {
-        forall(
+        forAll(
             row(4455, star1Input1.lines()), // GuardId 99, FavoriteMinute 45
             row(136461, Day4.STAR2_DATA)
         ) { result, input ->

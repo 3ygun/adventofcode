@@ -28,7 +28,7 @@ object Day5 : Day {
         val intermediate = removeJoinedItems(input)
 
         val result = ('a'..'z')
-            .map { c -> Regex("$c|${c.toUpperCase()}").replace(intermediate, "") }
+            .map { c -> Regex("$c|${c.uppercaseChar()}").replace(intermediate, "") }
             .map { removeJoinedItems(it) }
             .minBy { it.length }!!
 
@@ -42,7 +42,7 @@ object Day5 : Day {
             val char2 = input[i+1]
 
             if (char1 == char2) continue
-            if (char1 == char2.toLowerCase() || char1.toLowerCase() == char2) {
+            if (char1 == char2.lowercaseChar() || char1.lowercaseChar() == char2) {
                 return removeJoinedItems(
                     input = input.removeRange(i, i+2),
                     startingIndex = max(i-1, 0)

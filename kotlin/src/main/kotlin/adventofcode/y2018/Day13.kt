@@ -102,7 +102,7 @@ object Day13 : Day {
 
         override fun toString(): String {
             val result = StringBuilder()
-            board.forEach { row -> result.appendln(row) }
+            board.forEach { row -> result.appendLine(row) }
             return result.toString()
         }
 

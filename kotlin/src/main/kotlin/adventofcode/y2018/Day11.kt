@@ -3,6 +3,7 @@ package adventofcode.y2018
 import adventofcode.Day
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -91,13 +92,13 @@ object Day11 : Day {
         return powerLevel.toInt() - 5
     }
 
-    internal fun star2Calc(gridSerialNumber: Int): Day11Result {
+    internal fun star2Calc(gridSerialNumber: Int): Day11Result = runBlocking {
         val board = createBoard(gridSerialNumber)
 
         // Calculate
         val results = Channel<Day11Result>()
         for (y in 299 downTo 0) {
-            GlobalScope.launch {
+            launch {
                 results.send(calculate(y, board))
             }
         }
@@ -111,7 +112,7 @@ object Day11 : Day {
         }
         results.close()
 
-        return result
+        result
     }
 
     private fun calculate(y: Int, board: Array<IntArray>): Day11Result {
