@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.gradle.kotlin.dsl.*
 
 // This stuff was mainly based off the generated project from: https://start.ktor.io
@@ -5,6 +7,7 @@ import org.gradle.kotlin.dsl.*
 //   gradle compileKotlin
 //   gradle clean test
 //   gradle run --args='-year YEAR -all'
+//   gradle build --continuous
 
 // These are set in gradle.properties
 val kotlin_version: String by project // Need to update in file and in the `plugins` section
@@ -49,23 +52,15 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEa
 
 // Setup testing
 tasks.withType<Test>().configureEach {
+	testLogging {
+		showExceptions = true
+		showCauses = true
+
+		// This line adds the "expected X but was Y" messages
+		exceptionFormat = TestExceptionFormat.FULL
+
+		events.add(TestLogEvent.FAILED)
+		events.add(TestLogEvent.SKIPPED)
+	}
 	useJUnitPlatform()
 }
-//	test {
-//		testLogging.showExceptions = true
-//		useJUnitPlatform()
-//
-//		reports {
-//			junitXml.isEnabled = false
-//			html.isEnabled = true
-//		}
-//
-//		// On "gradle clean test" prints the test name that hits the following events
-//		// Otherwise you need to look at some file?
-//		testLogging {
-//			// events.add(TestLogEvent.PASSED)
-//			events.add(TestLogEvent.SKIPPED)
-//			events.add(TestLogEvent.FAILED)
-//		}
-//	}
-//}
