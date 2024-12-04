@@ -8,7 +8,7 @@ import kotlin.math.absoluteValue
 object Day2 : Day {
     override val day: Int = 2
 
-    internal val STAR1: List<String> get() = DataLoader.readNonBlankLinesFrom("/y2024/Day2Star2.txt")
+    internal val STAR1: List<String> get() = DataLoader.readNonBlankLinesFrom("/y2024/Day2Star1.txt")
 
     override fun star1Run(): String {
         val safeLevels = star1(STAR1)
