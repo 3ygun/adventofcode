@@ -17,7 +17,7 @@ class Day1Tests : DescribeSpec({
             Day1.star1(input.lines()) shouldBe 11
         }
 
-        it("Puzzel Inputs") {
+        it("Puzzle Inputs") {
             Day1.star1Run() shouldBe "Difference in the lists: 3569916"
         }
     }
