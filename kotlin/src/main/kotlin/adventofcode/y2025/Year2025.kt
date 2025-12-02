@@ -1,0 +1,13 @@
+package adventofcode.y2025
+
+import adventofcode.Day
+import adventofcode.YearRunner
+import adventofcode.utils.daysMap
+
+object Year2025 : YearRunner {
+    override val year: Int = 2025
+
+    override val days: Map<Int, Day> = daysMap(
+        Day1,
+    )
+}

@@ -3,6 +3,8 @@ package adventofcode
 import adventofcode.utils.yearsMap
 import adventofcode.y2018.Year2018
 import adventofcode.y2019.Year2019
+import adventofcode.y2024.Year2024
+import adventofcode.y2025.Year2025
 import kotlin.IllegalArgumentException
 
 fun main(args: Array<String>) {
@@ -48,7 +50,9 @@ fun main(args: Array<String>) {
 
 private val years = yearsMap(
     Year2018,
-    Year2019
+    Year2019,
+    Year2024,
+    Year2025,
 )
 
 private data class Config(
