@@ -12,7 +12,7 @@ object Day1 : Day {
 
     // STAR1 == 3
     // STAR2 == 6
-    private val EXAMPLE = """
+    private val EXAMPLE get() = """
     L68
     L30
     R48
