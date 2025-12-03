@@ -9,5 +9,6 @@ object Year2025 : YearRunner {
 
     override val days: Map<Int, Day> = daysMap(
         Day1,
+        Day2,
     )
 }
