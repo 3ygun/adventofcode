@@ -13,3 +13,4 @@ My adventures doing the [Advent of Code](http://adventofcode.com/) challenges
     - Because now I really like Kotlin mainly:
         - Non-Null datatypes
         - Basically everything else Go lang looked great for (harder binaries though :'( )
+    - Run a specific day with `gradle run --args='-year 2025 -day 5'`
