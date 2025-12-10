@@ -86,15 +86,10 @@ object Day8 : Day {
 
     class Star1SortedClosestPairs(
         private val maxItems: Int,
-        dummyRow: Star1Pair = Star1Pair(
-            distance = Double.MAX_VALUE,
-            a = Star1Light(0, 0, 0),
-            b = Star1Light(0, 0, 0),
-        ),
     ) {
-        private var numOfItems = 1
-        private var furthestPair: Star1Pair = dummyRow
-        private var firstPair: Star1Pair = dummyRow
+        private var numOfItems = 0
+        private var lastPair: Star1Pair? = null
+        private var firstPair: Star1Pair? = null
 
         init {
             require(maxItems > 0) { "maxItems > 0" }
@@ -104,15 +99,19 @@ object Day8 : Day {
             val distance = a.distanceTo(b)
             val pair = Star1Pair(distance, a, b)
             if (numOfItems < maxItems) {
-                pushPair(pair, end = furthestPair, endItem = true)
+                pushPair(pair, end = lastPair, endItem = true)
                 numOfItems++
+                if (numOfItems == 1) lastPair = firstPair
+                println("$numOfItems : $pair")
+                if (debug) printPairs()
             } else {
-                val pushed = pushPair(pair, end = furthestPair, endItem = true)
+                val pushed = pushPair(pair, end = lastPair, endItem = true, addToEnd = false)
                 if (pushed) {
-                    val previousLast = furthestPair
-                    furthestPair = previousLast.formerPair!!
-                    furthestPair.nextPair = null // mark new "end" as "end"
+                    val previousLast = lastPair!!
+                    lastPair = previousLast.formerPair
+                    lastPair!!.nextPair = null // mark new "end" as "end"
                     previousLast.formerPair = null // unlink previous "end"
+                    if (debug) printPairs()
                 }
             }
         }
@@ -122,13 +121,13 @@ object Day8 : Day {
          *
          * @return true/false was something added
          */
-        private tailrec fun pushPair(pair: Star1Pair, end: Star1Pair?, endItem: Boolean = false): Boolean {
+        private tailrec fun pushPair(pair: Star1Pair, end: Star1Pair?, endItem: Boolean = false, addToEnd: Boolean = true): Boolean {
             if (end == null) {
                 // New "shortest element"
-                val priorFirstPair = furthestPair
-                firstPair = pair
+                val priorFirstPair = firstPair
                 pair.nextPair = priorFirstPair
-                priorFirstPair.formerPair = pair
+                priorFirstPair?.formerPair = pair
+                firstPair = pair
                 return true
             }
 
@@ -141,28 +140,33 @@ object Day8 : Day {
                 } else {
                     pushPair(pair, end.formerPair)
                 }
-            } else {
+            } else if (addToEnd) {
                 // pair.distance > end.distance
-                if (endItem) {
-                    // It's outside our range
-                    return false
-                } else {
-                    pair.formerPair = end
-                    pair.nextPair = end.nextPair
-                    end.nextPair = pair
-                    return true
-                }
+                pair.formerPair = end
+                pair.nextPair = end.nextPair
+                end.nextPair = pair
+                pair.nextPair?.formerPair = pair
+                if (endItem) lastPair = pair
+                return true
+            } else {
+                return false
             }
         }
 
         fun printPairs() {
+            println()
+            println(firstPair)
+            println("[ (size: $numOfItems)")
             var count = 0
             var currentPair: Star1Pair? = firstPair
             while (currentPair != null) {
-                println("$count : $currentPair")
+                println("$count : $currentPair, previous: ${currentPair.formerPair?.distance}, next: ${currentPair.nextPair?.distance}")
                 currentPair = currentPair.nextPair
                 count++
             }
+            println("]")
+            println(lastPair)
+            println()
         }
 
         fun toCircuits(): Map<Star1CircuitId, List<Star1Light>> {
