@@ -85,10 +85,9 @@ object Day8 : Day {
         val z: Long,
     ) {
         fun distanceTo(other: Star1JBox): Double {
-            fun Double.squared() = this * this
+            fun Long.squared() = this * this
             return sqrt(
-                (x - other.x).toDouble().squared() + (y - other.y).toDouble().squared() + (z - other.z).toDouble()
-                    .squared()
+                ((x - other.x).squared() + (y - other.y).squared() + (z - other.z).squared()).toDouble()
             )
         }
     }
