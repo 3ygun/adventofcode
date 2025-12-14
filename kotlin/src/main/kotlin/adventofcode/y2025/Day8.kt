@@ -6,7 +6,7 @@ import kotlin.math.sqrt
 
 object Day8 : Day {
     override val day: Int = 8
-    override val debug: Boolean get() = true
+    override val debug: Boolean get() = false
 
     internal val STAR1 get() = DataLoader.readNonBlankLinesFrom("/y2025/Day8Star1.txt")
 
@@ -45,16 +45,20 @@ object Day8 : Day {
         check(lights.size == lights.toSet().size) { "No duplicate lights" }
 
         val sortedClosestPairs = Star1SortedClosestPairs(maxItems)
-        lights.forEach { light ->
-            for (light2 in lights) {
-                if (light == light2) continue
-                sortedClosestPairs.checkAndAddPair(light, light2)
+        for (a in lights) {
+            for (b in lights) {
+                if (a == b) continue
+                sortedClosestPairs.checkAndAddPair(a, b)
             }
         }
-        if (debug) sortedClosestPairs.printPairs()
+        sortedClosestPairs.printPairs()
 
         val circuits = sortedClosestPairs.toCircuits()
         if (debug) println(circuits)
+        println(circuits.entries
+                .map { it.value.size }
+            .sortedDescending())
+
         val top3Values = circuits.entries
             .map { it.value.size }
             .sortedDescending()
@@ -71,7 +75,7 @@ object Day8 : Day {
     ) {
         fun distanceTo(other: Star1Light): Double {
             fun Double.squared() = this * this
-            return sqrt((x * other.x).toDouble().squared() + (y * other.y).toDouble().squared() + (z * other.z).toDouble().squared())
+            return sqrt((x - other.x).toDouble().squared() + (y - other.y).toDouble().squared() + (z - other.z).toDouble().squared())
         }
     }
 
@@ -102,7 +106,6 @@ object Day8 : Day {
                 pushPair(pair, end = lastPair, endItem = true)
                 numOfItems++
                 if (numOfItems == 1) lastPair = firstPair
-                println("$numOfItems : $pair")
                 if (debug) printPairs()
             } else {
                 val pushed = pushPair(pair, end = lastPair, endItem = true, addToEnd = false)
@@ -155,7 +158,7 @@ object Day8 : Day {
 
         fun printPairs() {
             println()
-            println(firstPair)
+            println("first: $firstPair")
             println("[ (size: $numOfItems)")
             var count = 0
             var currentPair: Star1Pair? = firstPair
@@ -165,7 +168,7 @@ object Day8 : Day {
                 count++
             }
             println("]")
-            println(lastPair)
+            println("lastPair: $lastPair")
             println()
         }
 
