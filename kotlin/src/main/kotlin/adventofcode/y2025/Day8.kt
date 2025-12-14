@@ -6,11 +6,12 @@ import kotlin.math.sqrt
 
 object Day8 : Day {
     override val day: Int = 8
-    override val debug: Boolean get() = false
+    override val debug: Boolean get() = true
 
     internal val STAR1 get() = DataLoader.readNonBlankLinesFrom("/y2025/Day8Star1.txt")
 
-    private val EXAMPLE get() = """
+    private val EXAMPLE
+        get() = """
         162,817,812
         57,618,57
         906,360,560
@@ -54,18 +55,20 @@ object Day8 : Day {
         sortedClosestPairs.printPairs()
 
         val circuits = sortedClosestPairs.toCircuits()
-        if (debug) println(circuits)
-        println(circuits.entries
+        if (debug) {
+            println(circuits)
+            println(
+                circuits.entries
                 .map { it.value.size }
-            .sortedDescending())
-
-        println()
-        println("[")
-        circuits.entries
-            .sortedByDescending { it.value.size }
-            .forEach { println(it) }
-        println("]")
-
+                .sortedDescending())
+            println()
+            println("[")
+            circuits.entries
+                .sortedByDescending { it.value.size }
+                .forEach { println("Size: ${it.value.size}, Data: $it") }
+            println("]")
+            println()
+        }
 
         val top3Values = circuits.entries
             .map { it.value.size }
@@ -83,7 +86,10 @@ object Day8 : Day {
     ) {
         fun distanceTo(other: Star1JBox): Double {
             fun Double.squared() = this * this
-            return sqrt((x - other.x).toDouble().squared() + (y - other.y).toDouble().squared() + (z - other.z).toDouble().squared())
+            return sqrt(
+                (x - other.x).toDouble().squared() + (y - other.y).toDouble().squared() + (z - other.z).toDouble()
+                    .squared()
+            )
         }
     }
 
@@ -132,7 +138,12 @@ object Day8 : Day {
          *
          * @return true/false was something added
          */
-        private tailrec fun pushPair(pair: Star1Pair, end: Star1Pair?, endItem: Boolean = false, addToEnd: Boolean = true): Boolean {
+        private tailrec fun pushPair(
+            pair: Star1Pair,
+            end: Star1Pair?,
+            endItem: Boolean = false,
+            addToEnd: Boolean = true
+        ): Boolean {
             if (end == null) {
                 // New "shortest element"
                 val priorFirstPair = firstPair
@@ -195,12 +206,15 @@ object Day8 : Day {
                         pointToCircuitId[currentPair.a] = circuit
                         pointToCircuitId[currentPair.b] = circuit
                     }
+
                     aExistingCircuit != null && bExistingCircuit != null -> {
                         bExistingCircuit.id = aExistingCircuit.id // combine the circuits
                     }
+
                     aExistingCircuit != null -> {
                         pointToCircuitId[currentPair.b] = aExistingCircuit
                     }
+
                     bExistingCircuit != null -> {
                         pointToCircuitId[currentPair.a] = bExistingCircuit
                     }
