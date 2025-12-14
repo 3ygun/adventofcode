@@ -36,17 +36,17 @@ object Day8 : Day {
     override fun star1Run(): String {
         val lines = EXAMPLE
         val maxItems = 10
-        val lights = lines.map { line ->
+        val jBoxes = lines.map { line ->
             line.split(",")
                 .map { sNum -> sNum.toLong() }
                 .toList()
-                .let { Star1Light(it[0], it[1], it[2]) }
+                .let { Star1JBox(it[0], it[1], it[2]) }
         }
-        check(lights.size == lights.toSet().size) { "No duplicate lights" }
+        check(jBoxes.size == jBoxes.toSet().size) { "No duplicate lights" }
 
         val sortedClosestPairs = Star1SortedClosestPairs(maxItems)
-        for (a in lights) {
-            for (b in lights) {
+        for (a in jBoxes) {
+            for (b in jBoxes) {
                 if (a == b) continue
                 sortedClosestPairs.checkAndAddPair(a, b)
             }
@@ -59,6 +59,14 @@ object Day8 : Day {
                 .map { it.value.size }
             .sortedDescending())
 
+        println()
+        println("[")
+        circuits.entries
+            .sortedByDescending { it.value.size }
+            .forEach { println(it) }
+        println("]")
+
+
         val top3Values = circuits.entries
             .map { it.value.size }
             .sortedDescending()
@@ -68,12 +76,12 @@ object Day8 : Day {
         return "Top 3 sections Lights: $top3Values"
     }
 
-    data class Star1Light(
+    data class Star1JBox(
         val x: Long,
         val y: Long,
         val z: Long,
     ) {
-        fun distanceTo(other: Star1Light): Double {
+        fun distanceTo(other: Star1JBox): Double {
             fun Double.squared() = this * this
             return sqrt((x - other.x).toDouble().squared() + (y - other.y).toDouble().squared() + (z - other.z).toDouble().squared())
         }
@@ -81,8 +89,8 @@ object Day8 : Day {
 
     data class Star1Pair(
         val distance: Double,
-        val a: Star1Light,
-        val b: Star1Light,
+        val a: Star1JBox,
+        val b: Star1JBox,
     ) {
         var formerPair: Star1Pair? = null
         var nextPair: Star1Pair? = null
@@ -99,7 +107,7 @@ object Day8 : Day {
             require(maxItems > 0) { "maxItems > 0" }
         }
 
-        fun checkAndAddPair(a: Star1Light, b: Star1Light) {
+        fun checkAndAddPair(a: Star1JBox, b: Star1JBox) {
             val distance = a.distanceTo(b)
             val pair = Star1Pair(distance, a, b)
             if (numOfItems < maxItems) {
@@ -172,9 +180,9 @@ object Day8 : Day {
             println()
         }
 
-        fun toCircuits(): Map<Star1CircuitId, List<Star1Light>> {
+        fun toCircuits(): Map<Star1CircuitId, List<Star1JBox>> {
             var nextCircuitId = 1
-            val pointToCircuitId = mutableMapOf<Star1Light, Star1CircuitId>()
+            val pointToCircuitId = mutableMapOf<Star1JBox, Star1CircuitId>()
 
             var currentPair: Star1Pair? = firstPair
             while (currentPair != null) {
