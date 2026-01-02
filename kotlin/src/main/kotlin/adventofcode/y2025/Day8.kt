@@ -38,6 +38,7 @@ object Day8 : Day {
         // Not 13224
         val lines = STAR1
         val maxItems = 1000
+        // Expecting 40
 //        val lines = EXAMPLE
 //        val maxItems = 10
         val jBoxes = lines.map { line ->
@@ -49,10 +50,12 @@ object Day8 : Day {
         check(jBoxes.size == jBoxes.toSet().size) { "No duplicate lights" }
 
         val sortedClosestPairs = Star1SortedClosestPairs(maxItems)
-        for (a in jBoxes) {
-            for (b in jBoxes) {
-                if (a == b) continue
-                sortedClosestPairs.checkAndAddPair(a, b)
+        jBoxes.forEachIndexed { i, a ->
+            jBoxes.forEachIndexed { j, b ->
+                // Skip everything we've already added
+                if (j > i) {
+                    sortedClosestPairs.checkAndAddPair(a, b)
+                }
             }
         }
         sortedClosestPairs.printPairs()
@@ -119,6 +122,7 @@ object Day8 : Day {
         fun checkAndAddPair(a: Star1JBox, b: Star1JBox) {
             val distance = a.distanceTo(b)
             val pair = Star1Pair(distance, a, b)
+            i++
             if (numOfItems < maxItems) {
                 val pushed = pushPair(pair, end = lastPair, endItem = true)
                 if (pushed) { // Handle duplicate pairs
@@ -133,9 +137,8 @@ object Day8 : Day {
                     lastPair = previousLast.formerPair
                     lastPair!!.nextPair = null // mark new "end" as "end"
                     previousLast.formerPair = null // unlink previous "end"
-                    i++
                     if (i % 10 == 0) {
-                        println("On [i: $i] length: ${computeCurrentLength(firstPair, 0)}")
+                        println("On [i: $i] length: ${computeCurrentLength(firstPair, 0)}, $numOfItems")
                     }
 //                    if (debug) printPairs()
                 }
