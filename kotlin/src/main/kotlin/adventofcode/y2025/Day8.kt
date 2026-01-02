@@ -34,13 +34,35 @@ object Day8 : Day {
         425,690,689
     """.trimIndent().lines()
 
+    // EXAMPLE2: Tests the Union-Find chain merge bug
+    // 6 boxes, 5 pairs to connect. Shortest pairs in order:
+    //   1. A-B (dist=1) → circuit {A,B}
+    //   2. C-D (dist=2) → circuit {C,D}
+    //   3. E-F (dist=3) → circuit {E,F}
+    //   4. D-E (dist=8) → merges {C,D} with {E,F} → c3.id = c2.id
+    //   5. B-C (dist=9) → merges {A,B} with {C,D,E,F} → c2.id = c1.id
+    // BUG: c3 still has old id, so {E,F} becomes orphaned!
+    // Buggy answer: 4 * 2 = 8 (two circuits: {A,B,C,D} and {E,F})
+    // Correct answer: 6 (one circuit: {A,B,C,D,E,F})
+    private val EXAMPLE2
+        get() = """
+        0,0,0
+        1,0,0
+        10,0,0
+        12,0,0
+        20,0,0
+        23,0,0
+    """.trimIndent().lines()
+
     override fun star1Run(): String {
-        // Not 13224
-        val lines = STAR1
-        val maxItems = 1000
+//        val lines = STAR1
+//        val maxItems = 1000
         // Expecting 40
 //        val lines = EXAMPLE
 //        val maxItems = 10
+        // Expecting 6 (buggy code gives 8)
+        val lines = EXAMPLE2
+        val maxItems = 5
         val jBoxes = lines.map { line ->
             line.split(",")
                 .map { sNum -> sNum.toLong() }
@@ -208,44 +230,39 @@ object Day8 : Day {
             println()
         }
 
-        fun toCircuits(): Map<Star1CircuitId, List<Star1JBox>> {
-            var nextCircuitId = 1
-            val pointToCircuitId = mutableMapOf<Star1JBox, Star1CircuitId>()
+        fun toCircuits(): Map<Star1JBox, List<Star1JBox>> {
+            // Union-Find with path compression
+            val parent = mutableMapOf<Star1JBox, Star1JBox>()
+
+            fun find(x: Star1JBox): Star1JBox {
+                if (parent[x] != x) {
+                    parent[x] = find(parent[x]!!)  // Path compression
+                }
+                return parent[x]!!
+            }
+
+            fun union(x: Star1JBox, y: Star1JBox) {
+                val px = find(x)
+                val py = find(y)
+                if (px != py) {
+                    parent[py] = px
+                }
+            }
 
             var currentPair: Star1Pair? = firstPair
             while (currentPair != null) {
-                val aExistingCircuit = pointToCircuitId[currentPair.a]
-                val bExistingCircuit = pointToCircuitId[currentPair.b]
-                when {
-                    aExistingCircuit == null && bExistingCircuit == null -> {
-                        val circuit = Star1CircuitId(nextCircuitId)
-                        nextCircuitId++
-                        pointToCircuitId[currentPair.a] = circuit
-                        pointToCircuitId[currentPair.b] = circuit
-                    }
-
-                    aExistingCircuit != null && bExistingCircuit != null -> {
-                        bExistingCircuit.id = aExistingCircuit.id // combine the circuits
-                    }
-
-                    aExistingCircuit != null -> {
-                        pointToCircuitId[currentPair.b] = aExistingCircuit
-                    }
-
-                    bExistingCircuit != null -> {
-                        pointToCircuitId[currentPair.a] = bExistingCircuit
-                    }
-                }
+                // Initialize if not seen
+                if (currentPair.a !in parent) parent[currentPair.a] = currentPair.a
+                if (currentPair.b !in parent) parent[currentPair.b] = currentPair.b
+                // Union the two boxes
+                union(currentPair.a, currentPair.b)
                 currentPair = currentPair.nextPair
             }
 
-            return pointToCircuitId.entries.groupBy({ it.value }) { it.key }
+            // Group by root representative
+            return parent.keys.groupBy { find(it) }
         }
     }
-
-    data class Star1CircuitId(
-        var id: Int
-    )
 
     override fun star2Run(): String {
         return ""
