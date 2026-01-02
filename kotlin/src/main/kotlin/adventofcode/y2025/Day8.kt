@@ -230,7 +230,63 @@ object Day8 : Day {
             println()
         }
 
-        fun toCircuits(): Map<Star1JBox, List<Star1JBox>> {
+        fun toCircuits(): Map<out Any, List<Star1JBox>> {
+            return toCircuitsDavid()
+        }
+
+        fun toCircuitsDavid(): Map<Int, List<Star1JBox>> {
+            var nextCircuitId = 1
+            val pointToCircuitId = mutableMapOf<Star1JBox, Int>()
+
+            var currentPair: Star1Pair? = firstPair
+            while (currentPair != null) {
+                val aExistingCircuit = pointToCircuitId[currentPair.a]
+                val bExistingCircuit = pointToCircuitId[currentPair.b]
+                when {
+                    aExistingCircuit == null && bExistingCircuit == null -> {
+                        val circuit = nextCircuitId
+                        nextCircuitId++
+                        pointToCircuitId[currentPair.a] = circuit
+                        pointToCircuitId[currentPair.b] = circuit
+                    }
+
+                    aExistingCircuit != null && bExistingCircuit != null -> {
+                        // combine the circuits
+                        val circuit = aExistingCircuit
+                        pointToCircuitId.entries.forEach { (key, value) ->
+                            if (value == bExistingCircuit) {
+                                pointToCircuitId[key] = circuit
+                            }
+                        }
+                    }
+
+                    aExistingCircuit != null -> {
+                        pointToCircuitId[currentPair.b] = aExistingCircuit
+                    }
+
+                    bExistingCircuit != null -> {
+                        pointToCircuitId[currentPair.a] = bExistingCircuit
+                    }
+                }
+                currentPair = currentPair.nextPair
+            }
+
+            return pointToCircuitId.entries.groupBy({ it.value }) { it.key }
+        }
+
+        /**
+         * Note (DSoller): Coloring roughly based on an instance in the Star1JBox set.
+         * Uses the "minimal amount of data" bit is hard to read IMO. Thus, why I have the
+         * [toCircuitsDavid] still.
+         *
+         * Why use Claude? I'd already spent a ton of hours trying to debug
+         * this code after having some nasty "buried" bugs. Thus, asked for
+         * Claude review (like a CodeRabbit) version to try to see what I
+         * missed otherwise I was just going to re-write everything and see
+         * if a V2 would have solved it. The issue came down to trying to
+         * be "too tricky" with shared memory.
+         */
+        fun toCircuitsClaude(): Map<Star1JBox, List<Star1JBox>> {
             // Union-Find with path compression
             val parent = mutableMapOf<Star1JBox, Star1JBox>()
 
