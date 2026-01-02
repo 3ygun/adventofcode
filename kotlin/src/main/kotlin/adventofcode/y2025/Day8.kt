@@ -55,14 +55,14 @@ object Day8 : Day {
     """.trimIndent().lines()
 
     override fun star1Run(): String {
-//        val lines = STAR1
-//        val maxItems = 1000
+        val lines = STAR1
+        val maxItems = 1000
         // Expecting 40
 //        val lines = EXAMPLE
 //        val maxItems = 10
         // Expecting 6 (buggy code gives 8)
-        val lines = EXAMPLE2
-        val maxItems = 5
+//        val lines = EXAMPLE2
+//        val maxItems = 5
         val jBoxes = lines.map { line ->
             line.split(",")
                 .map { sNum -> sNum.toLong() }
