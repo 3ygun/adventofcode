@@ -6,7 +6,7 @@ import kotlin.math.sqrt
 
 object Day8 : Day {
     override val day: Int = 8
-    override val debug: Boolean get() = true
+    override val debug: Boolean get() = false
 
     internal val STAR1 get() = DataLoader.readNonBlankLinesFrom("/y2025/Day8Star1.txt")
 
@@ -35,8 +35,11 @@ object Day8 : Day {
     """.trimIndent().lines()
 
     override fun star1Run(): String {
-        val lines = EXAMPLE
-        val maxItems = 10
+        // Not 13224
+        val lines = STAR1
+        val maxItems = 1000
+//        val lines = EXAMPLE
+//        val maxItems = 10
         val jBoxes = lines.map { line ->
             line.split(",")
                 .map { sNum -> sNum.toLong() }
@@ -107,6 +110,7 @@ object Day8 : Day {
         private var numOfItems = 0
         private var lastPair: Star1Pair? = null
         private var firstPair: Star1Pair? = null
+        private var i = 0
 
         init {
             require(maxItems > 0) { "maxItems > 0" }
@@ -116,10 +120,12 @@ object Day8 : Day {
             val distance = a.distanceTo(b)
             val pair = Star1Pair(distance, a, b)
             if (numOfItems < maxItems) {
-                pushPair(pair, end = lastPair, endItem = true)
-                numOfItems++
-                if (numOfItems == 1) lastPair = firstPair
-                if (debug) printPairs()
+                val pushed = pushPair(pair, end = lastPair, endItem = true)
+                if (pushed) { // Handle duplicate pairs
+                    numOfItems++
+                    if (numOfItems == 1) lastPair = firstPair
+//                    if (debug) printPairs()
+                }
             } else {
                 val pushed = pushPair(pair, end = lastPair, endItem = true, addToEnd = false)
                 if (pushed) {
@@ -127,9 +133,18 @@ object Day8 : Day {
                     lastPair = previousLast.formerPair
                     lastPair!!.nextPair = null // mark new "end" as "end"
                     previousLast.formerPair = null // unlink previous "end"
-                    if (debug) printPairs()
+                    i++
+                    if (i % 10 == 0) {
+                        println("On [i: $i] length: ${computeCurrentLength(firstPair, 0)}")
+                    }
+//                    if (debug) printPairs()
                 }
             }
+        }
+
+        private tailrec fun computeCurrentLength(node: Star1Pair?, count: Int): Int {
+            if (node == null) return count
+            return computeCurrentLength(node.nextPair, count + 1)
         }
 
         /**
