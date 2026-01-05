@@ -325,9 +325,11 @@ object Day8 : Day {
     }
 
     override fun star2Run(): String {
-        val lines = STAR1
+//        val lines = STAR1
         // Expecting 25272
 //        val lines = EXAMPLE
+        // Expecting 10
+        val lines = EXAMPLE2
         val jBoxes = lines.map { line ->
             line.split(",")
                 .map { sNum -> sNum.toLong() }
@@ -338,7 +340,7 @@ object Day8 : Day {
 
         val perPointClosestPair = mutableMapOf<Star1JBox, Pair<Double, Star1JBox>>()
         jBoxes.forEachIndexed { i, a ->
-            for (j in (i+1)..jBoxes.size) {
+            for (j in (i+1)..<jBoxes.size) {
                 val b = jBoxes[j]
                 val previousClosest = perPointClosestPair[a]?.first ?: Double.MAX_VALUE
                 val distance = a.distanceTo(b)
