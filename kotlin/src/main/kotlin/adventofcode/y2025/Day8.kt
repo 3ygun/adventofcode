@@ -80,7 +80,7 @@ object Day8 : Day {
                 }
             }
         }
-        sortedClosestPairs.printPairs()
+        if (debug) sortedClosestPairs.printPairs()
 
         val circuits = sortedClosestPairs.toCircuits()
         if (debug) {
@@ -150,7 +150,7 @@ object Day8 : Day {
                 if (pushed) { // Handle duplicate pairs
                     numOfItems++
                     if (numOfItems == 1) lastPair = firstPair
-//                    if (debug) printPairs()
+                    if (debug) printPairs()
                 }
             } else {
                 val pushed = pushPair(pair, end = lastPair, endItem = true, addToEnd = false)
@@ -159,10 +159,10 @@ object Day8 : Day {
                     lastPair = previousLast.formerPair
                     lastPair!!.nextPair = null // mark new "end" as "end"
                     previousLast.formerPair = null // unlink previous "end"
-                    if (i % 10 == 0) {
+                    if (debug && i % 10 == 0) {
                         println("On [i: $i] length: ${computeCurrentLength(firstPair, 0)}, $numOfItems")
                     }
-//                    if (debug) printPairs()
+                    if (debug) printPairs()
                 }
             }
         }
@@ -250,6 +250,10 @@ object Day8 : Day {
                         pointToCircuitId[currentPair.b] = circuit
                     }
 
+                    aExistingCircuit == bExistingCircuit -> {
+                        // Nothing to change
+                    }
+
                     aExistingCircuit != null && bExistingCircuit != null -> {
                         // combine the circuits
                         val circuit = aExistingCircuit
@@ -321,6 +325,188 @@ object Day8 : Day {
     }
 
     override fun star2Run(): String {
-        return ""
+        val lines = STAR1
+        // Expecting 25272
+//        val lines = EXAMPLE
+        val jBoxes = lines.map { line ->
+            line.split(",")
+                .map { sNum -> sNum.toLong() }
+                .toList()
+                .let { Star1JBox(it[0], it[1], it[2]) }
+        }
+        check(jBoxes.size == jBoxes.toSet().size) { "No duplicate lights" }
+
+        val sortedClosestPairs = Star2SortedClosestPairs(Int.MAX_VALUE, jBoxes.size)
+        jBoxes.forEachIndexed { i, a ->
+            jBoxes.forEachIndexed { j, b ->
+                // Skip everything we've already added
+                if (j > i) {
+                    sortedClosestPairs.checkAndAddPair(a, b)
+                }
+            }
+        }
+        if (debug) sortedClosestPairs.printPairs()
+
+        val results = sortedClosestPairs.toCircuitsThenGetAnswer()
+        return "Last 2 circuits combined X axis multiply: $results"
+    }
+
+    class Star2SortedClosestPairs(
+        private val maxItems: Int,
+        private val numTotalJBoxes: Int,
+    ) {
+        private var numOfItems = 0
+        private var lastPair: Star1Pair? = null
+        private var firstPair: Star1Pair? = null
+        private var i = 0
+
+        init {
+            require(maxItems > 0) { "maxItems > 0" }
+        }
+
+        fun checkAndAddPair(a: Star1JBox, b: Star1JBox) {
+            val distance = a.distanceTo(b)
+            val pair = Star1Pair(distance, a, b)
+            i++
+            if (numOfItems < maxItems) {
+                val pushed = pushPair(pair, end = lastPair, endItem = true)
+                if (pushed) { // Handle duplicate pairs
+                    numOfItems++
+                    if (numOfItems == 1) lastPair = firstPair
+//                    if (debug) printPairs()
+                }
+            } else {
+                val pushed = pushPair(pair, end = lastPair, endItem = true, addToEnd = false)
+                if (pushed) {
+                    val previousLast = lastPair!!
+                    lastPair = previousLast.formerPair
+                    lastPair!!.nextPair = null // mark new "end" as "end"
+                    previousLast.formerPair = null // unlink previous "end"
+//                    if (debug && i % 10 == 0) {
+//                        println("On [i: $i] length: ${computeCurrentLength(firstPair, 0)}, $numOfItems")
+//                    }
+//                    if (debug) printPairs()
+                }
+            }
+        }
+
+        private tailrec fun computeCurrentLength(node: Star1Pair?, count: Int): Int {
+            if (node == null) return count
+            return computeCurrentLength(node.nextPair, count + 1)
+        }
+
+        /**
+         * We're trying to iterate from "right to left" or "furthest to nearest"
+         *
+         * @return true/false was something added
+         */
+        private tailrec fun pushPair(
+            pair: Star1Pair,
+            end: Star1Pair?,
+            endItem: Boolean = false,
+            addToEnd: Boolean = true
+        ): Boolean {
+            if (end == null) {
+                // New "shortest element"
+                val priorFirstPair = firstPair
+                pair.nextPair = priorFirstPair
+                priorFirstPair?.formerPair = pair
+                firstPair = pair
+                return true
+            }
+
+            if (pair.distance < end.distance) {
+                return pushPair(pair, end.formerPair)
+            } else if (pair.distance == end.distance) {
+                return if (pair.a == end.b && pair.b == end.a) {
+                    // We've already recorded this pair
+                    false
+                } else {
+                    pushPair(pair, end.formerPair)
+                }
+            } else if (addToEnd) {
+                // pair.distance > end.distance
+                pair.formerPair = end
+                pair.nextPair = end.nextPair
+                end.nextPair = pair
+                pair.nextPair?.formerPair = pair
+                if (endItem) lastPair = pair
+                return true
+            } else {
+                return false
+            }
+        }
+
+        fun printPairs() {
+            println()
+            println("first: $firstPair")
+            println("[ (size: $numOfItems)")
+            var count = 0
+            var currentPair: Star1Pair? = firstPair
+            while (currentPair != null) {
+                println("$count : $currentPair, previous: ${currentPair.formerPair?.distance}, next: ${currentPair.nextPair?.distance}")
+                currentPair = currentPair.nextPair
+                count++
+            }
+            println("]")
+            println("lastPair: $lastPair")
+            println()
+        }
+
+        fun toCircuitsThenGetAnswer(): Long {
+            var nextCircuitId = 1
+            val pointToCircuitId = mutableMapOf<Star1JBox, Int>()
+
+            var currentPair: Star1Pair? = firstPair
+            loop@while (currentPair != null) {
+                val aExistingCircuit = pointToCircuitId[currentPair.a]
+                val bExistingCircuit = pointToCircuitId[currentPair.b]
+                var check: Boolean = false
+                when {
+                    aExistingCircuit == null && bExistingCircuit == null -> {
+                        val circuit = nextCircuitId
+                        nextCircuitId++
+                        pointToCircuitId[currentPair.a] = circuit
+                        pointToCircuitId[currentPair.b] = circuit
+                    }
+
+                    aExistingCircuit == bExistingCircuit -> {
+                        // Nothing to change
+                    }
+
+                    aExistingCircuit != null && bExistingCircuit != null -> {
+                        // combine the circuits
+                        val circuit = aExistingCircuit
+                        pointToCircuitId.entries.forEach { (key, value) ->
+                            if (value == bExistingCircuit) {
+                                pointToCircuitId[key] = circuit
+                            }
+                        }
+                        check = true
+                    }
+
+                    aExistingCircuit != null -> {
+                        pointToCircuitId[currentPair.b] = aExistingCircuit
+                        check = true
+                    }
+
+                    bExistingCircuit != null -> {
+                        pointToCircuitId[currentPair.a] = bExistingCircuit
+                        check = true
+                    }
+                }
+
+                if (check && pointToCircuitId.size == numTotalJBoxes) {
+                    // Check if we're at a single circuit
+                    if (pointToCircuitId.values.toSet().size == 1) {
+                        println("When combining: $currentPair")
+                        return currentPair.a.x * currentPair.b.x
+                    }
+                }
+                currentPair = currentPair.nextPair
+            }
+
+            throw IllegalStateException("Failed to combine all ")
+        }
     }
 }
