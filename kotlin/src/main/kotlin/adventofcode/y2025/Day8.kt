@@ -336,19 +336,29 @@ object Day8 : Day {
         }
         check(jBoxes.size == jBoxes.toSet().size) { "No duplicate lights" }
 
-        val sortedClosestPairs = Star2SortedClosestPairs(Int.MAX_VALUE, jBoxes.size)
+        val perPointClosestPair = mutableMapOf<Star1JBox, Pair<Double, Star1JBox>>()
         jBoxes.forEachIndexed { i, a ->
-            jBoxes.forEachIndexed { j, b ->
-                // Skip everything we've already added
-                if (j > i) {
-                    sortedClosestPairs.checkAndAddPair(a, b)
+            for (j in (i+1)..jBoxes.size) {
+                val b = jBoxes[j]
+                val previousClosest = perPointClosestPair[a]?.first ?: Double.MAX_VALUE
+                val distance = a.distanceTo(b)
+                if (distance < previousClosest) {
+                    perPointClosestPair[a] = Pair(distance, b)
+
+                    // Check other instance
+                    val other = perPointClosestPair[b]
+                    if (other == null || distance < other.first) {
+                        perPointClosestPair[b] = Pair(distance, a)
+                    }
                 }
             }
         }
-        if (debug) sortedClosestPairs.printPairs()
+        val maxDistancePair = perPointClosestPair.entries.maxBy { it.value.first }
 
-        val results = sortedClosestPairs.toCircuitsThenGetAnswer()
-        return "Last 2 circuits combined X axis multiply: $results"
+        val result = maxDistancePair.key.x * maxDistancePair.value.second.x
+        // TODO : Need to do some weird handling
+
+        return "Last 2 circuits combined X axis multiply: $result"
     }
 
     class Star2SortedClosestPairs(
