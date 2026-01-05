@@ -2,6 +2,9 @@ package adventofcode.y2025
 
 import adventofcode.DataLoader
 import adventofcode.Day
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 import kotlin.math.sqrt
 
 object Day8 : Day {
@@ -73,11 +76,9 @@ object Day8 : Day {
 
         val sortedClosestPairs = Star1SortedClosestPairs(maxItems)
         jBoxes.forEachIndexed { i, a ->
-            jBoxes.forEachIndexed { j, b ->
-                // Skip everything we've already added
-                if (j > i) {
-                    sortedClosestPairs.checkAndAddPair(a, b)
-                }
+            for (j in (i+1)..<jBoxes.size) {
+                val b = jBoxes[j]
+                sortedClosestPairs.checkAndAddPair(a, b)
             }
         }
         if (debug) sortedClosestPairs.printPairs()
@@ -325,11 +326,11 @@ object Day8 : Day {
     }
 
     override fun star2Run(): String {
-//        val lines = STAR1
+        val lines = STAR1
         // Expecting 25272
 //        val lines = EXAMPLE
         // Expecting 10
-        val lines = EXAMPLE2
+//        val lines = EXAMPLE2
         val jBoxes = lines.map { line ->
             line.split(",")
                 .map { sNum -> sNum.toLong() }
@@ -338,9 +339,11 @@ object Day8 : Day {
         }
         check(jBoxes.size == jBoxes.toSet().size) { "No duplicate lights" }
 
+        var z = 0
         val perPointClosestPair = mutableMapOf<Star1JBox, Pair<Double, Star1JBox>>()
         jBoxes.forEachIndexed { i, a ->
             for (j in (i+1)..<jBoxes.size) {
+                z++
                 val b = jBoxes[j]
                 val previousClosest = perPointClosestPair[a]?.first ?: Double.MAX_VALUE
                 val distance = a.distanceTo(b)
@@ -355,12 +358,83 @@ object Day8 : Day {
                 }
             }
         }
+        if (debug) println("Total number of possible connections: $z")
+
+        val circuits = Star2Circuit()
+
+
+
         val maxDistancePair = perPointClosestPair.entries.maxBy { it.value.first }
 
         val result = maxDistancePair.key.x * maxDistancePair.value.second.x
         // TODO : Need to do some weird handling
 
         return "Last 2 circuits combined X axis multiply: $result"
+    }
+
+    class Star2Circuit : MutableMap<Star1JBox, Int> by mutableMapOf<Star1JBox, Int>() {
+        private var nextCircuitId = 1
+        private var currentCircuits: MutableSet<Int> = mutableSetOf()
+
+        fun join(
+            a: Star1JBox,
+            b: Star1JBox,
+        ): Boolean {
+            val aExistingCircuit = this[a]
+            val bExistingCircuit = this[b]
+            return when {
+                aExistingCircuit == null && bExistingCircuit == null -> {
+                    val circuit = nextCircuitId
+                    currentCircuits.add(circuit)
+                    nextCircuitId++
+                    this[a] = circuit
+                    this[b] = circuit
+                    true
+                }
+
+                aExistingCircuit == bExistingCircuit -> {
+                    // Nothing to change
+                    false
+                }
+
+                aExistingCircuit != null && bExistingCircuit != null -> {
+                    collapseCircuits(aExistingCircuit, bExistingCircuit)
+                }
+
+                aExistingCircuit != null -> {
+                    this[b] = aExistingCircuit
+                    true
+                }
+
+                bExistingCircuit != null -> {
+                    this[a] = bExistingCircuit
+                    true
+                }
+
+                else -> throw IllegalStateException("Not possible")
+            }
+
+        }
+
+        /**
+         * @return something changed
+         */
+        fun collapseCircuits(
+            assignToCircuitId: Int,
+            fromCircuitId: Int,
+        ): Boolean {
+            var change = false
+            this.entries.forEach { (key, value) ->
+                if (value == fromCircuitId) {
+                    this[key] = assignToCircuitId
+                    change = true
+                }
+            }
+            if (change) {
+                currentCircuits.remove(fromCircuitId)
+            }
+            return change
+        }
     }
 
     class Star2SortedClosestPairs(
