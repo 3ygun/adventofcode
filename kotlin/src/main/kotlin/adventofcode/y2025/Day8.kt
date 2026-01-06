@@ -2,6 +2,9 @@ package adventofcode.y2025
 
 import adventofcode.DataLoader
 import adventofcode.Day
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 import kotlin.math.sqrt
 
 object Day8 : Day {
@@ -73,14 +76,12 @@ object Day8 : Day {
 
         val sortedClosestPairs = Star1SortedClosestPairs(maxItems)
         jBoxes.forEachIndexed { i, a ->
-            jBoxes.forEachIndexed { j, b ->
-                // Skip everything we've already added
-                if (j > i) {
-                    sortedClosestPairs.checkAndAddPair(a, b)
-                }
+            for (j in (i+1)..<jBoxes.size) {
+                val b = jBoxes[j]
+                sortedClosestPairs.checkAndAddPair(a, b)
             }
         }
-        sortedClosestPairs.printPairs()
+        if (debug) sortedClosestPairs.printPairs()
 
         val circuits = sortedClosestPairs.toCircuits()
         if (debug) {
@@ -150,7 +151,7 @@ object Day8 : Day {
                 if (pushed) { // Handle duplicate pairs
                     numOfItems++
                     if (numOfItems == 1) lastPair = firstPair
-//                    if (debug) printPairs()
+                    if (debug) printPairs()
                 }
             } else {
                 val pushed = pushPair(pair, end = lastPair, endItem = true, addToEnd = false)
@@ -159,10 +160,10 @@ object Day8 : Day {
                     lastPair = previousLast.formerPair
                     lastPair!!.nextPair = null // mark new "end" as "end"
                     previousLast.formerPair = null // unlink previous "end"
-                    if (i % 10 == 0) {
+                    if (debug && i % 10 == 0) {
                         println("On [i: $i] length: ${computeCurrentLength(firstPair, 0)}, $numOfItems")
                     }
-//                    if (debug) printPairs()
+                    if (debug) printPairs()
                 }
             }
         }
@@ -250,6 +251,10 @@ object Day8 : Day {
                         pointToCircuitId[currentPair.b] = circuit
                     }
 
+                    aExistingCircuit == bExistingCircuit -> {
+                        // Nothing to change
+                    }
+
                     aExistingCircuit != null && bExistingCircuit != null -> {
                         // combine the circuits
                         val circuit = aExistingCircuit
@@ -321,6 +326,145 @@ object Day8 : Day {
     }
 
     override fun star2Run(): String {
-        return ""
+        // Answer 8361881885
+        val lines = STAR1
+        // Expecting 25272
+//        val lines = EXAMPLE
+        // Expecting 10
+//        val lines = EXAMPLE2
+        val jBoxes = lines.map { line ->
+            line.split(",")
+                .map { sNum -> sNum.toLong() }
+                .toList()
+                .let { Star1JBox(it[0], it[1], it[2]) }
+        }
+        check(jBoxes.size == jBoxes.toSet().size) { "No duplicate lights" }
+
+        var numPairs = 0
+        val perPointClosestPair = mutableMapOf<Star1JBox, Pair<Double, Star1JBox>>()
+        jBoxes.forEachIndexed { i, a ->
+            for (j in (i+1)..<jBoxes.size) {
+                numPairs++
+                val b = jBoxes[j]
+                val previousClosest = perPointClosestPair[a]?.first ?: Double.MAX_VALUE
+                val distance = a.distanceTo(b)
+                if (distance < previousClosest) {
+                    perPointClosestPair[a] = Pair(distance, b)
+
+                    // Check other instance
+                    val other = perPointClosestPair[b]
+                    if (other == null || distance < other.first) {
+                        perPointClosestPair[b] = Pair(distance, a)
+                    }
+                }
+            }
+        }
+        if (debug) println("Total number of possible connections: $numPairs")
+
+        val (ordering, distanceToPair) = star2PopulateOrdering(jBoxes, numPairs)
+        val circuits = Star2Circuit(jBoxes)
+
+        var result = 0L
+        loop@for (distance in ordering) {
+            val pairs = distanceToPair[distance] ?: continue
+            for ((a, b) in pairs) {
+                val change = circuits.join(a, b)
+                if (change && circuits.isSingleCircuit()) {
+                    result = a.x * b.x
+                    break@loop
+                }
+            }
+        }
+
+        return "Last 2 circuits combined X axis multiply: $result"
+    }
+
+    private fun star2PopulateOrdering(
+        jBoxes: List<Star1JBox>,
+        numPairs: Int,
+    ): Pair<DoubleArray, Map<Double, List<Pair<Star1JBox, Star1JBox>>>> {
+        val ordering = DoubleArray(numPairs + 100)
+        val distanceToPair = mutableMapOf<Double, MutableList<Pair<Star1JBox, Star1JBox>>>()
+        var z = 0
+        jBoxes.forEachIndexed { i, a ->
+            for (j in (i+1)..<jBoxes.size) {
+                val b = jBoxes[j]
+                val distance = a.distanceTo(b)
+                ordering[z] = distance
+                z++
+                distanceToPair
+                    .getOrPut(distance) { mutableListOf() }
+                    .add(Pair(a, b))
+            }
+        }
+
+        // Sort closest to farthest
+        ordering.sort()
+        return ordering to distanceToPair
+    }
+
+    class Star2Circuit(
+        jBoxes: List<Star1JBox>,
+    ) {
+        private var jBoxToCircuitId = mutableMapOf<Star1JBox, Int>()
+        private var currentCircuits: MutableSet<Int> = mutableSetOf()
+
+        init {
+            jBoxes.forEachIndexed { i, a ->
+                jBoxToCircuitId[a] = i
+                currentCircuits.add(i)
+            }
+        }
+
+        fun isSingleCircuit(): Boolean = currentCircuits.size == 1
+
+        fun join(
+            a: Star1JBox,
+            b: Star1JBox,
+        ): Boolean {
+            val aExistingCircuit = jBoxToCircuitId[a]
+            val bExistingCircuit = jBoxToCircuitId[b]
+            return when {
+                aExistingCircuit == null && bExistingCircuit == null ->
+                    throw IllegalStateException("Somehow things aren't set! aExistingCircuit=$aExistingCircuit, bExistingCircuit=$bExistingCircuit")
+
+                aExistingCircuit == bExistingCircuit -> {
+                    // Nothing to change
+                    false
+                }
+
+                aExistingCircuit != null && bExistingCircuit != null -> {
+                    collapseCircuits(aExistingCircuit, bExistingCircuit)
+                }
+
+                aExistingCircuit != null ->
+                    throw IllegalStateException("Somehow things aren't set! aExistingCircuit=$aExistingCircuit, bExistingCircuit=$bExistingCircuit")
+                bExistingCircuit != null ->
+                    throw IllegalStateException("Somehow things aren't set! aExistingCircuit=$aExistingCircuit, bExistingCircuit=$bExistingCircuit")
+
+                else -> throw IllegalStateException("Not possible")
+            }
+
+        }
+
+        /**
+         * @return something changed
+         */
+        fun collapseCircuits(
+            assignToCircuitId: Int,
+            fromCircuitId: Int,
+        ): Boolean {
+            var change = false
+            jBoxToCircuitId.entries.forEach { (key, value) ->
+                if (value == fromCircuitId) {
+                    jBoxToCircuitId[key] = assignToCircuitId
+                    change = true
+                }
+            }
+            if (change) {
+                currentCircuits.remove(fromCircuitId)
+            }
+            return change
+        }
     }
 }
