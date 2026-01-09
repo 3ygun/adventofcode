@@ -201,6 +201,16 @@ object Day9 : Day {
             }
 
             val newChecks = mutableListOf<Any>()
+            fun IntRange.addIfNotEmpty() {
+                if (!this.isEmpty()) newChecks.add(this)
+            }
+            var lineAdded = false
+            fun addLineIfNeeded() {
+                if (lineAdded) return
+
+                newChecks.add(line)
+                lineAdded = true
+            }
             for (existingCheck in checks) {
                 when (existingCheck) {
                     is IntRange -> {
@@ -210,35 +220,40 @@ object Day9 : Day {
                         val rl = range.last
                         when {
                             ecl < rf -> newChecks.add(existingCheck)
-                            ecf > rl -> newChecks.add(existingCheck)
-                            ecf <= rf && ecl <= rl -> {
-                                val newRange = ecf until rf
-                                if (!newRange.isEmpty()) newChecks.add(newRange)
+                            ecf > rl -> {
+                                addLineIfNeeded()
+                                newChecks.add(existingCheck)
                             }
-                            ecl >= rl && ecf >= rf -> {
-                                val newRange = (rl+1) .. ecl
+                            rf <= ecf && ecl <= rl -> {
+                                /* No longer need this check */
+                                addLineIfNeeded()
                             }
+
+                            // range in existing
+                            ecf <= rf && rl <= ecl -> {
+                                (ecf until rf).addIfNotEmpty()
+                                addLineIfNeeded()
+                                ((rl + 1)..ecl).addIfNotEmpty()
+                            }
+
+                            // range shortens existing
+                            ecf <= rf -> {
+                                (ecf until rf).addIfNotEmpty()
+                                addLineIfNeeded()
+                            }
+                            ecl >= rl -> {
+                                addLineIfNeeded()
+                                ((rl + 1)..ecl).addIfNotEmpty()
+                            }
+                            else -> throw IllegalStateException("don't think I can get here")
                         }
-
-
-                        when {
-                            existingCheck.contains(range.first) -> {
-                                newChecks.add(existingCheck.first until range.first)
-                                if (existingCheck.contains(range.last)) {
-                                    newChecks.add((range.last + 1)..existingCheck.last)
-                                }
-                            }
-                            existingCheck.contains(range.last) -> {
-
-                            }
-                        }
+                    }
+                    is Star2Line -> {
+                        TODO("Basically need to deal with all the space within the line")
                     }
                 }
             }
             checks = newChecks
-            range.con
-            checks
-            lines.add(line)
         }
     }
 
