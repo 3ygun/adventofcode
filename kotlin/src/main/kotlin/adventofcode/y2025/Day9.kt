@@ -2,6 +2,8 @@ package adventofcode.y2025
 
 import adventofcode.DataLoader
 import adventofcode.Day
+import kotlin.math.max
+import kotlin.math.min
 
 object Day9 : Day {
     override val day: Int = 9
@@ -68,6 +70,196 @@ object Day9 : Day {
     }
 
     override fun star2Run(): String {
+        val lines = STAR1
+        // Area 24. One way to do this is between 9,5 and 2,3
+//        val lines = EXAMPLE
+
+        val redTiles = lines.map { it.split(",").let { (a, b) -> Star2Point(a.toInt(), b.toInt()) } }
+        val maxCol = redTiles.maxOf { it.x }
+        val maxRow = redTiles.maxOf { it.y }
+//        return "maxCol = $maxCol and maxRow = $maxRow so squares: ${maxCol.toLong() * maxRow.toLong()}"
+
+        val colChecks = Array<Star2OutOfRangeChecks>(maxCol + 1) { Star2OutOfRangeChecks(maxRow) { it.y } }
+        val rowChecks = Array<Star2OutOfRangeChecks>(maxRow + 1) { Star2OutOfRangeChecks(maxCol) { it.x } }
+
+        for (i in 0 until redTiles.size) {
+            val iNext = if (i + 1 < redTiles.size) i + 1 else 0
+            val iPrev = if (i - 1 < 0) redTiles.size - 1 else i - 1
+            val current = redTiles[i]
+            val next = redTiles[iNext]
+            val previous = redTiles[iPrev]
+            if (current == next) {
+                throw IllegalStateException("Current Point: $current is same as the next Point: $next")
+            }
+            if (current == previous) {
+                throw IllegalStateException("Current Point: $current is same as the previous Point: $previous")
+            }
+
+            val inside = findInside(redTiles, i)
+            val line = Star2Line(current, next, inside)
+
+            when {
+                current.x == next.x -> {
+                    // vertical col line
+                    val col = current.x
+                    val small = min(current.y, next.y)
+                    val large = max(current.y, next.y)
+
+                    colChecks[col].exclude(small..large, line)
+
+
+                    // Vertical line
+                    when {
+                        current.y != previous.y -> throw IllegalStateException("Diagonal Line! Current Point: $current, Previous Point: $previous")
+                        current.x == previous.x -> findInside(redTiles, iPrev)
+                        current.x < previous.x -> Star2Inside.RIGHT
+                        else /* current.x > previous.x */ -> Star2Inside.LEFT
+                    }
+                }
+            }
+        }
+
+        val a = 1..1
+
+
         return ""
+    }
+
+    fun findInside(
+        redTiles: List<Star2Point>,
+        i: Int
+    ): Star2Inside {
+        val iNext = if (i + 1 < redTiles.size) i + 1 else 0
+        val iPrev = if (i - 1 < 0) redTiles.size - 1 else i - 1
+        val current = redTiles[i]
+        val next = redTiles[iNext]
+        val previous = redTiles[iPrev]
+        if (current == next) {
+            throw IllegalStateException("Current Point: $current is same as the next Point: $next")
+        }
+        if (current == previous) {
+            throw IllegalStateException("Current Point: $current is same as the previous Point: $previous")
+        }
+
+        return when {
+            current.x == next.x -> {
+                // Vertical line
+                when {
+                    current.y != previous.y -> throw IllegalStateException("Diagonal Line! Current Point: $current, Previous Point: $previous")
+                    current.x == previous.x -> findInside(redTiles, iPrev)
+                    current.x < previous.x -> Star2Inside.RIGHT
+                    else /* current.x > previous.x */ -> Star2Inside.LEFT
+                }
+            }
+            current.y == next.y -> {
+                // Horizontal line
+                when {
+                    current.x != previous.x -> throw IllegalStateException("Diagonal Line! Current Point: $current, Previous Point: $previous")
+                    current.y == previous.y -> findInside(redTiles, iPrev)
+                    current.y < previous.y -> Star2Inside.TOP
+                    else /* current.y > previous.y */ -> Star2Inside.BOTTOM
+                }
+            }
+            else -> throw IllegalStateException("Diagonal Line! Current Point: $current, Next Point: $next")
+        }
+    }
+
+    class Star2Point(var x: Int, var y: Int)
+
+    enum class Star2Inside {
+        TOP,
+        BOTTOM,
+        LEFT,
+        RIGHT,
+    }
+
+    class Star2Line(
+        val pointA: Star2Point,
+        val pointB: Star2Point,
+        val inside: Star2Inside,
+    )
+
+    class Star2ColOutOfRangeChecks(max: Int) {
+        // Any ranges are "outside the safe area"
+        private var checks = mutableListOf<Any>(1..max)
+
+        fun exclude(
+            range: IntRange,
+            line: Star2Line,
+        ) {
+            require(range.first <= range.last) { "Descending range: $range for $line" }
+            when (line.inside) {
+                Star2Inside.LEFT,
+                Star2Inside.RIGHT -> {
+                    // doesn't matter for col
+                }
+
+                Star2Inside.TOP,
+                Star2Inside.BOTTOM -> {
+                    // matters for col
+                }
+            }
+
+            val newChecks = mutableListOf<Any>()
+            for (existingCheck in checks) {
+                when (existingCheck) {
+                    is IntRange -> {
+                        val ecf = existingCheck.first
+                        val ecl = existingCheck.last
+                        val rf = range.first
+                        val rl = range.last
+                        when {
+                            ecl < rf -> newChecks.add(existingCheck)
+                            ecf > rl -> newChecks.add(existingCheck)
+                            ecf <= rf && ecl <= rl -> {
+                                val newRange = ecf until rf
+                                if (!newRange.isEmpty()) newChecks.add(newRange)
+                            }
+                            ecl >= rl && ecf >= rf -> {
+                                val newRange = (rl+1) .. ecl
+                            }
+                        }
+
+
+                        when {
+                            existingCheck.contains(range.first) -> {
+                                newChecks.add(existingCheck.first until range.first)
+                                if (existingCheck.contains(range.last)) {
+                                    newChecks.add((range.last + 1)..existingCheck.last)
+                                }
+                            }
+                            existingCheck.contains(range.last) -> {
+
+                            }
+                        }
+                    }
+                }
+            }
+            checks = newChecks
+            range.con
+            checks
+            lines.add(line)
+        }
+    }
+
+    class Star2OutOfRangeChecks(
+        max: Int,
+        val op: (Star2Point) -> Int,
+    ) {
+        private var checks = mutableListOf<IntRange>(1..max)
+        private val lines = mutableListOf<Star2Line>()
+
+        fun exclude(
+            range: IntRange,
+            line: Star2Line,
+        ) {
+            val newChecks = mutableListOf<IntRange>()
+            for (existingCheck in checks) {
+                if (existingCheck.contains(range.))
+            }
+            range.con
+            checks
+            lines.add(line)
+        }
     }
 }
