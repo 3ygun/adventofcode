@@ -168,14 +168,19 @@ object Day9 : Day {
     data class Star2Line(
         val pointA: Star2Point,
         val pointB: Star2Point,
-    )
+    ) {
+        fun isPoint(): Boolean = pointA.x == pointB.x && pointA.y == pointB.y
+    }
 
     class Star2View(
         private val col: Int,
     ) {
         private var lines = mutableListOf<Star2Line>()
 
-        fun addLine(line: Star2Line) { lines += line }
+        fun addLine(line: Star2Line) {
+            if (line.isPoint()) return // Points don't need marked
+            lines += line
+        }
 
         /**
          * @return things inside
@@ -186,30 +191,35 @@ object Day9 : Day {
                 val line1Vertical = line1.pointA.x == line1.pointB.x
                 val line2Vertical = line2.pointA.x == line2.pointB.x
                 val line1MinY = min(line1.pointA.y, line1.pointB.y)
-                val line2MinY = max(line2.pointA.y, line2.pointB.y)
+                val line1MaxY = max(line1.pointA.y, line1.pointB.y)
+                val line2MinY = min(line2.pointA.y, line2.pointB.y)
+                val line2MaxY = max(line2.pointA.y, line2.pointB.y)
 
                 when {
                     line1Vertical && line2Vertical -> line1MinY.compareTo(line2MinY)
-                    line1Vertical -> {
-                        // TODO : Deal
-                        0
+                    line1Vertical -> when (line1MinY.compareTo(line2MinY)) {
+                        -1 -> return@sortWith -1
+                        0 -> return@sortWith 1
+                        else -> return@sortWith 1
                     }
-                    line2Vertical -> {
-                        0
+                    line2Vertical -> when (line1MinY.compareTo(line2MinY)) {
+                        -1 -> return@sortWith -1
+                        0 -> return@sortWith -1
+                        else -> return@sortWith 1
                     }
-                    else -> 0
+                    else -> line1MinY.compareTo(line2MinY)
                 }
             }
 
-            lines.sortBy {
-                when {
-                    it.pointA.x == it.pointB.x -> (min(it.pointA.y, it.pointB.y) * 2) + 1
-                    it.pointA.x == col -> it.pointA.y * 2
-                    it.pointB.x == col -> it.pointB.y * 2
-                    it.pointA.y == it.pointB.y -> it.pointA.y * 2
-                    else -> throw IllegalStateException("Unknown stuff")
-                }
-            }
+//            lines.sortBy {
+//                when {
+//                    it.pointA.x == it.pointB.x -> (min(it.pointA.y, it.pointB.y) * 2) + 1
+//                    it.pointA.x == col -> it.pointA.y * 2
+//                    it.pointB.x == col -> it.pointB.y * 2
+//                    it.pointA.y == it.pointB.y -> it.pointA.y * 2
+//                    else -> throw IllegalStateException("Unknown stuff")
+//                }
+//            }
             val results = mutableListOf<IntRange>()
 
             var start = Int.MAX_VALUE
@@ -226,7 +236,10 @@ object Day9 : Day {
                     results.add(aStart..aEnd)
                 } else {
                     val inside = start != Int.MAX_VALUE
-                    if (inside) {
+                    val onLine = end != Int.MIN_VALUE
+                    if (onLine) {
+                        // Nothing to do here
+                    } else if (inside) {
                         end = max(end, yMax)
                         results.add(start..end)
                         start = Int.MAX_VALUE
