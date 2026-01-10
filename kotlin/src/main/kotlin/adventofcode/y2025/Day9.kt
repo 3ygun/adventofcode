@@ -177,7 +177,70 @@ object Day9 : Day {
         val pointA: Star2Point,
         val pointB: Star2Point,
         val inside: Star2Inside,
-    )
+    ) {
+        fun isPoint(): Boolean = pointA.x == pointB.x && pointA.y == pointB.y
+    }
+
+    class Star2View(
+        private val num: Int,
+    ) {
+        private var lines = mutableListOf<Star2Line>()
+
+        fun addLine(line: Star2Line) { lines += line }
+
+        /**
+         * @return things inside
+         */
+        fun flattenAsColum(): List<IntRange> {
+            // We're trying to find what on the y-axis is covered
+            val pointX = num
+            lines.sortBy { min(it.pointA.y, it.pointB.x) }
+            val results = mutableListOf<IntRange>()
+
+            var i = 0
+            var start = Int.MAX_VALUE
+            var end = Int.MIN_VALUE
+            while (i < lines.size) {
+                val line = lines[i]
+                val next = lines.getOrNull(i + 1)
+                i++
+
+                val ay = line.pointA.y
+                val by = line.pointB.y
+                val yMin = min(ay, by)
+                val yMax = max(ay, by)
+//                if (line.isPoint()) {
+//                    start = min(start, line.pointA.y)
+//                    continue
+//                }
+                if (line.pointA.x == line.pointB.x) {
+                    // Either point or vertical line
+                    start = min(start, yMin)
+                    end = max(end, yMax)
+                    continue
+                } else {
+                    // Horizontal line
+                    when (line.inside) {
+                        Star2Inside.LEFT,
+                        Star2Inside.RIGHT -> throw IllegalStateException("Not caught in right place. left/right column")
+
+                        Star2Inside.TOP -> {
+                            if (start == Int.MAX_VALUE) throw IllegalStateException("Not caught in top place. nothing above num")
+                            end = max(end, yMax)
+                            results.add(start..end)
+                            start = Int.MAX_VALUE
+                            end = Int.MIN_VALUE
+                        }
+                        Star2Inside.BOTTOM -> {
+                            start = min(start, yMin)
+                        }
+                    }
+                }
+            }
+
+            return emptyList()
+        }
+    }
 
     class Star2ColOutOfRangeChecks(max: Int) {
         // Any ranges are "outside the safe area"
