@@ -244,8 +244,8 @@ object Day9 : Day {
             if (start == Int.MAX_VALUE && end == Int.MIN_VALUE) {
                 // We're good
             } else {
-                require(start != Int.MAX_VALUE) { "Col: $col, Start: $start and End: $end. Don't want start max_value. $lines" }
-                require(end != Int.MIN_VALUE) { "Col: $col, Start: $start and End: $end. Don't want end min_value. $lines" }
+                require(start != Int.MAX_VALUE) { "Col: $col, Start: $start and End: $end. Don't want start max_value.\n${lines.joinToString(",\n")}" }
+                require(end != Int.MIN_VALUE) { "Col: $col, Start: $start and End: $end. Don't want end min_value.\n${lines.joinToString(",\n")}" }
                 results.add(start..end)
             }
 
