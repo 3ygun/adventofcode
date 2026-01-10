@@ -77,7 +77,7 @@ object Day9 : Day {
         val redTiles = lines.map { it.split(",").let { (a, b) -> Star2Point(a.toInt(), b.toInt()) } }
         val maxCol = redTiles.maxOf { it.x }
 
-        val colChecksLines = Array<Star2View>(maxCol + 2) { Star2View() }
+        val colChecksLines = Array<Star2View>(maxCol + 2) { Star2View(it) }
         for (i in 0 until redTiles.size) {
             val iNext = if (i + 1 < redTiles.size) i + 1 else 0
             val current = redTiles[i]
@@ -104,7 +104,6 @@ object Day9 : Day {
         }
 
         val colInside = Array<List<IntRange>>(maxCol + 2) { colChecksLines[it].flattenAsColum() }
-
 
         var largestArea = 0L
         var largestPair = Star2Point(-1, -1) to Star2Point(-1, -1)
@@ -164,14 +163,16 @@ object Day9 : Day {
         return "Largest area: $largestArea (from $largestPair)"
     }
 
-    class Star2Point(var x: Int, var y: Int)
+    data class Star2Point(var x: Int, var y: Int)
 
     data class Star2Line(
         val pointA: Star2Point,
         val pointB: Star2Point,
     )
 
-    class Star2View {
+    class Star2View(
+        private val col: Int,
+    ) {
         private var lines = mutableListOf<Star2Line>()
 
         fun addLine(line: Star2Line) { lines += line }
@@ -181,25 +182,48 @@ object Day9 : Day {
          */
         fun flattenAsColum(): List<IntRange> {
             // We're trying to find what on the y-axis is covered
-            lines.sortBy { min(it.pointA.y, it.pointB.y) }
+            lines.sortWith { line1, line2 ->
+                val line1Vertical = line1.pointA.x == line1.pointB.x
+                val line2Vertical = line2.pointA.x == line2.pointB.x
+                val line1MinY = min(line1.pointA.y, line1.pointB.y)
+                val line2MinY = max(line2.pointA.y, line2.pointB.y)
+
+                when {
+                    line1Vertical && line2Vertical -> line1MinY.compareTo(line2MinY)
+                    line1Vertical -> {
+                        // TODO : Deal
+                        0
+                    }
+                    line2Vertical -> {
+                        0
+                    }
+                    else -> 0
+                }
+            }
+
+            lines.sortBy {
+                when {
+                    it.pointA.x == it.pointB.x -> (min(it.pointA.y, it.pointB.y) * 2) + 1
+                    it.pointA.x == col -> it.pointA.y * 2
+                    it.pointB.x == col -> it.pointB.y * 2
+                    it.pointA.y == it.pointB.y -> it.pointA.y * 2
+                    else -> throw IllegalStateException("Unknown stuff")
+                }
+            }
             val results = mutableListOf<IntRange>()
 
-            var i = 0
             var start = Int.MAX_VALUE
             var end = Int.MIN_VALUE
-            while (i < lines.size) {
-                val line = lines[i]
-                i++
-
+            lines.forEach { line ->
                 val ay = line.pointA.y
                 val by = line.pointB.y
                 val yMin = min(ay, by)
                 val yMax = max(ay, by)
                 if (line.pointA.x == line.pointB.x) {
                     // Either point or vertical line
-                    start = min(start, yMin)
-                    end = max(end, yMax)
-                    continue
+                    val aStart = min(start, yMin)
+                    val aEnd = max(end, yMax)
+                    results.add(aStart..aEnd)
                 } else {
                     val inside = start != Int.MAX_VALUE
                     if (inside) {
@@ -216,8 +240,8 @@ object Day9 : Day {
             if (start == Int.MAX_VALUE && end == Int.MIN_VALUE) {
                 // We're good
             } else {
-                require(start != Int.MAX_VALUE) { "Start: $start and End: $end. Don't want start max_value" }
-                require(end != Int.MIN_VALUE) { "Start: $start and End: $end. Don't want end min_value" }
+                require(start != Int.MAX_VALUE) { "Col: $col, Start: $start and End: $end. Don't want start max_value. $lines" }
+                require(end != Int.MIN_VALUE) { "Col: $col, Start: $start and End: $end. Don't want end min_value. $lines" }
                 results.add(start..end)
             }
 
