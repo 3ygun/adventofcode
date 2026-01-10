@@ -231,9 +231,8 @@ object Day9 : Day {
                 val yMax = max(ay, by)
                 if (line.pointA.x == line.pointB.x) {
                     // Either point or vertical line
-                    val aStart = min(start, yMin)
-                    val aEnd = max(end, yMax)
-                    results.add(aStart..aEnd)
+                    start = min(start, yMin)
+                    end = max(end, yMax)
                 } else {
                     val inside = start != Int.MAX_VALUE
                     val onLine = end != Int.MIN_VALUE
