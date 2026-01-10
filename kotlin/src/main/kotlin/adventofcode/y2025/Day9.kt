@@ -76,11 +76,8 @@ object Day9 : Day {
 
         val redTiles = lines.map { it.split(",").let { (a, b) -> Star2Point(a.toInt(), b.toInt()) } }
         val maxCol = redTiles.maxOf { it.x }
-        val maxRow = redTiles.maxOf { it.y }
-//        return "maxCol = $maxCol and maxRow = $maxRow so squares: ${maxCol.toLong() * maxRow.toLong()}"
 
-        val colChecksLines = Array<Star2View>(maxCol + 2) { Star2View(it) }
-//        val rowChecksLines = Array<Star2View>(maxRow + 2) { Star2View(it) }
+        val colChecksLines = Array<Star2View>(maxCol + 2) { Star2View() }
         for (i in 0 until redTiles.size) {
             val iNext = if (i + 1 < redTiles.size) i + 1 else 0
             val current = redTiles[i]
@@ -95,15 +92,7 @@ object Day9 : Day {
 
             if (current.x == next.x) {
                 colChecksLines[current.x].addLine(line)
-                val cY = current.y
-                val nY = next.y
-                val yMin = min(cY, nY)
-                val yMax = max(cY, nY)
-                (yMin..yMax).forEach { y ->
-//                    rowChecksLines[y].addLine(line)
-                }
             } else {
-//                rowChecksLines[current.y].addLine(line)
                 val cX = current.x
                 val nX = next.x
                 val xMin = min(cX, nX)
@@ -115,7 +104,6 @@ object Day9 : Day {
         }
 
         val colInside = Array<List<IntRange>>(maxCol + 2) { colChecksLines[it].flattenAsColum() }
-//        val rowInside = Array<List<IntRange>>(maxRow + 2) { rowChecksLines[it].flattenAsRow() }
 
 
         var largestArea = 0L
@@ -183,9 +171,7 @@ object Day9 : Day {
         val pointB: Star2Point,
     )
 
-    class Star2View(
-        private val num: Int,
-    ) {
+    class Star2View {
         private var lines = mutableListOf<Star2Line>()
 
         fun addLine(line: Star2Line) { lines += line }
@@ -223,51 +209,6 @@ object Day9 : Day {
                         end = Int.MIN_VALUE
                     } else {
                         start = min(start, yMin)
-                    }
-                }
-            }
-
-            if (start == Int.MAX_VALUE && end == Int.MIN_VALUE) {
-                // We're good
-            } else {
-                require(start != Int.MAX_VALUE) { "Start: $start and End: $end. Don't want start max_value" }
-                require(end != Int.MIN_VALUE) { "Start: $start and End: $end. Don't want end min_value" }
-                results.add(start..end)
-            }
-
-            return results
-        }
-
-        fun flattenAsRow(): List<IntRange> {
-            // We're trying to find what on the x-axis is covered
-            lines.sortBy { min(it.pointA.x, it.pointB.x) }
-            val results = mutableListOf<IntRange>()
-
-            var i = 0
-            var start = Int.MAX_VALUE
-            var end = Int.MIN_VALUE
-            while (i < lines.size) {
-                val line = lines[i]
-                i++
-
-                val aX = line.pointA.x
-                val bX = line.pointB.x
-                val xMin = min(aX, bX)
-                val xMax = max(aX, bX)
-                if (line.pointA.y == line.pointB.y) {
-                    // Either point or vertical line
-                    start = min(start, xMin)
-                    end = max(end, xMax)
-                    continue
-                } else {
-                    val inside = start != Int.MAX_VALUE
-                    if (inside) {
-                        end = max(end, xMax)
-                        results.add(start..end)
-                        start = Int.MAX_VALUE
-                        end = Int.MIN_VALUE
-                    } else {
-                        start = min(start, xMin)
                     }
                 }
             }
