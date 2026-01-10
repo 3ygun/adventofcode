@@ -70,9 +70,9 @@ object Day9 : Day {
     }
 
     override fun star2Run(): String {
-//        val lines = STAR1
+        val lines = STAR1
         // Area 24. One way to do this is between 9,5 and 2,3
-        val lines = EXAMPLE
+//        val lines = EXAMPLE
 
         val redTiles = lines.map { it.split(",").let { (a, b) -> Star2Point(a.toInt(), b.toInt()) } }
         val maxCol = redTiles.maxOf { it.x }
@@ -178,7 +178,6 @@ object Day9 : Day {
         private var lines = mutableListOf<Star2Line>()
 
         fun addLine(line: Star2Line) {
-            if (line.isPoint()) return // Points don't need marked
             lines += line
         }
 
@@ -191,39 +190,29 @@ object Day9 : Day {
                 val line1Vertical = line1.pointA.x == line1.pointB.x
                 val line2Vertical = line2.pointA.x == line2.pointB.x
                 val line1MinY = min(line1.pointA.y, line1.pointB.y)
-                val line1MaxY = max(line1.pointA.y, line1.pointB.y)
                 val line2MinY = min(line2.pointA.y, line2.pointB.y)
-                val line2MaxY = max(line2.pointA.y, line2.pointB.y)
 
                 when {
                     line1Vertical && line2Vertical -> line1MinY.compareTo(line2MinY)
                     line1Vertical -> when (line1MinY.compareTo(line2MinY)) {
-                        -1 -> return@sortWith -1
-                        0 -> return@sortWith 1
-                        else -> return@sortWith 1
+                        -1 -> -1
+                        0 -> 1
+                        else -> 1
                     }
                     line2Vertical -> when (line1MinY.compareTo(line2MinY)) {
-                        -1 -> return@sortWith -1
-                        0 -> return@sortWith -1
-                        else -> return@sortWith 1
+                        -1 -> -1
+                        0 -> -1
+                        else -> 1
                     }
                     else -> line1MinY.compareTo(line2MinY)
                 }
             }
 
-//            lines.sortBy {
-//                when {
-//                    it.pointA.x == it.pointB.x -> (min(it.pointA.y, it.pointB.y) * 2) + 1
-//                    it.pointA.x == col -> it.pointA.y * 2
-//                    it.pointB.x == col -> it.pointB.y * 2
-//                    it.pointA.y == it.pointB.y -> it.pointA.y * 2
-//                    else -> throw IllegalStateException("Unknown stuff")
-//                }
-//            }
             val results = mutableListOf<IntRange>()
 
             var start = Int.MAX_VALUE
             var end = Int.MIN_VALUE
+            var previousY = Int.MIN_VALUE
             lines.forEach { line ->
                 val ay = line.pointA.y
                 val by = line.pointB.y
@@ -233,18 +222,21 @@ object Day9 : Day {
                     // Either point or vertical line
                     start = min(start, yMin)
                     end = max(end, yMax)
+                    previousY = yMax
                 } else {
                     val inside = start != Int.MAX_VALUE
-                    val onLine = end != Int.MIN_VALUE
+                    val onLine = previousY == yMin
                     if (onLine) {
                         // Nothing to do here
                     } else if (inside) {
-                        end = max(end, yMax)
+                        end = max(end, yMin)
                         results.add(start..end)
                         start = Int.MAX_VALUE
                         end = Int.MIN_VALUE
+                        previousY = Int.MIN_VALUE
                     } else {
                         start = min(start, yMin)
+                        previousY = yMin
                     }
                 }
             }
