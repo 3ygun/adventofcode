@@ -11,7 +11,8 @@ object Day9 : Day {
 
     internal val STAR1 get() = DataLoader.readNonBlankLinesFrom("/y2025/Day9Star1.txt")
 
-    private val EXAMPLE get() = """
+    private val EXAMPLE
+        get() = """
         7,1
         11,1
         11,7
@@ -41,6 +42,7 @@ object Day9 : Day {
                         a.second > b.second -> 1 + a.second - b.second
                         else -> 1 + b.second - a.second
                     }
+
                     a.first > b.first -> {
                         val x = 1 + a.first - b.first
                         when {
@@ -49,6 +51,7 @@ object Day9 : Day {
                             else -> x * (1 + b.second - a.second)
                         }
                     }
+
                     else -> {
                         val x = 1 + b.first - a.first
                         when {
@@ -99,8 +102,7 @@ object Day9 : Day {
 
         val colInside = Array<List<IntRange>>(maxCol + 2) { colChecksLines[it].flattenAsColum() }
 
-        var largestArea = 0L
-        var largestPair = Star2Point(-1, -1) to Star2Point(-1, -1)
+        val largestToSmallest = mutableListOf<Triple<Long, Int, Int>>()
         redTiles.forEachIndexed { i, aa ->
             val a = aa.x.toLong() to aa.y.toLong()
             for (j in (i + 1) until redTiles.size) {
@@ -112,6 +114,7 @@ object Day9 : Day {
                         a.second > b.second -> 1 + a.second - b.second
                         else -> 1 + b.second - a.second
                     }
+
                     a.first > b.first -> {
                         val x = 1 + a.first - b.first
                         when {
@@ -120,6 +123,7 @@ object Day9 : Day {
                             else -> x * (1 + b.second - a.second)
                         }
                     }
+
                     else -> {
                         val x = 1 + b.first - a.first
                         when {
@@ -130,29 +134,49 @@ object Day9 : Day {
                     }
                 }
 
-                if (size <= largestArea) {
-                    // Wouldn't be bigger even if valid
-                } else {
-                    // Validate
-                    val leftX = min(aa.x, bb.x)
-                    val rightX = max(aa.x, bb.x)
-                    val topY = min(aa.y, bb.y)
-                    val bottomY = max(aa.y, bb.y)
+                largestToSmallest.add(Triple(size, i, j))
+            }
+        }
 
-                    val valid = (leftX..rightX).all { x ->
-                        val col = colInside[x]
-                        (topY..bottomY).all { y ->
-                            col.any { it.contains(y) }
+        largestToSmallest.sortByDescending { it.first }
+
+        var largestArea = 0L
+        var largestPair = Star2Point(-1, -1) to Star2Point(-1, -1)
+        largestToSmallest.forEach { (size, i, j) ->
+            val aa = redTiles[i]
+            val bb = redTiles[j]
+            if (size <= largestArea) {
+                // Wouldn't be bigger even if valid
+            } else {
+                // Validate
+                val leftX = min(aa.x, bb.x)
+                val rightX = max(aa.x, bb.x)
+                val topY = min(aa.y, bb.y)
+                val bottomY = max(aa.y, bb.y)
+
+                val valid = (leftX..rightX).all { x ->
+                    val col = colInside[x]
+                    var k = topY
+                    while (k <= bottomY) {
+                        val passed = col.any {
+                            val has = it.contains(k)
+                            if (has) {
+                                k = min(it.last + 1, bottomY + 1)
+                            }
+                            has
                         }
+                        if (!passed) return@all false
                     }
+                    true
+                }
 
-                    if (valid) {
-                        largestArea = size
-                        largestPair = aa to bb
-                    }
+                if (valid) {
+                    largestArea = size
+                    largestPair = aa to bb
                 }
             }
         }
+
 
         return "Largest area: $largestArea (from $largestPair)"
     }
@@ -204,11 +228,13 @@ object Day9 : Day {
                         0 -> 1
                         else -> 1
                     }
+
                     line2Vertical -> when (line1MinY.compareTo(line2MinY)) {
                         -1 -> -1
                         0 -> -1
                         else -> 1
                     }
+
                     else -> line1MinY.compareTo(line2MinY)
                 }
             }
@@ -223,6 +249,7 @@ object Day9 : Day {
                 end = Int.MIN_VALUE
                 directions = mutableListOf()
             }
+
             var i = 0
             lines.forEach { line ->
                 i++
@@ -288,8 +315,28 @@ object Day9 : Day {
             if (start == Int.MAX_VALUE && end == Int.MIN_VALUE) {
                 // We're good
             } else {
-                require(start != Int.MAX_VALUE) { "i: $i, Col: $col, Start: $start and End: $end. Don't want start max_value.\n${lines.map { "$it ${it.direction(col)},\n" }}\nDirections: $directions\nResults: $results" }
-                require(end != Int.MIN_VALUE) { "i: $i, Col: $col, Start: $start and End: $end. Don't want end min_value.\n${lines.map { "$it ${it.direction(col)},\n" }}\nDirections: $directions\nResults: $results" }
+                require(start != Int.MAX_VALUE) {
+                    "i: $i, Col: $col, Start: $start and End: $end. Don't want start max_value.\n${
+                        lines.map {
+                            "$it ${
+                                it.direction(
+                                    col
+                                )
+                            },\n"
+                        }
+                    }\nDirections: $directions\nResults: $results"
+                }
+                require(end != Int.MIN_VALUE) {
+                    "i: $i, Col: $col, Start: $start and End: $end. Don't want end min_value.\n${
+                        lines.map {
+                            "$it ${
+                                it.direction(
+                                    col
+                                )
+                            },\n"
+                        }
+                    }\nDirections: $directions\nResults: $results"
+                }
                 results.add(start..end)
             }
 
