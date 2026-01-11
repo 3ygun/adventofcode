@@ -164,6 +164,17 @@ object Day9 : Day {
         val pointB: Star2Point,
     ) {
         fun isPoint(): Boolean = pointA.x == pointB.x && pointA.y == pointB.y
+
+        fun direction(col: Int): Int? {
+            val ax = pointA.x
+            val bx = pointB.x
+            return when {
+                ax == bx -> 0
+                ax == col -> if (ax < bx) 1 else -1
+                bx == col -> if (bx < ax) 1 else -1
+                else -> null
+            }
+        }
     }
 
     class Star2View(
@@ -231,12 +242,7 @@ object Day9 : Day {
                         reset()
                     }
                 } else {
-                    val newDirection = when {
-                        ax == col -> if (ax < bx) 1 else -1
-                        bx == col -> if (bx < ax) 1 else -1
-                        else -> null
-                    }
-
+                    val newDirection = line.direction(col)
                     if (directions.isEmpty()) {
                         start = min(start, yMin)
                         directions.add(newDirection)
@@ -267,7 +273,7 @@ object Day9 : Day {
                         if (lastDirection == newDirection) {
                             results.add(start..end)
                             reset()
-                        } else if (lastDirection == null) {
+                        } else if (newDirection == null) {
                             // close now
                             results.add(start..end)
                             reset()
@@ -282,8 +288,8 @@ object Day9 : Day {
             if (start == Int.MAX_VALUE && end == Int.MIN_VALUE) {
                 // We're good
             } else {
-                require(start != Int.MAX_VALUE) { "i: $i, Col: $col, Start: $start and End: $end. Don't want start max_value.\n${lines.joinToString(",\n")}\nDirections: $directions\nResults: $results" }
-                require(end != Int.MIN_VALUE) { "i: $i, Col: $col, Start: $start and End: $end. Don't want end min_value.\n${lines.joinToString(",\n")}\nDirections: $directions\nResults: $results" }
+                require(start != Int.MAX_VALUE) { "i: $i, Col: $col, Start: $start and End: $end. Don't want start max_value.\n${lines.map { "$it ${it.direction(col)},\n" }}\nDirections: $directions\nResults: $results" }
+                require(end != Int.MIN_VALUE) { "i: $i, Col: $col, Start: $start and End: $end. Don't want end min_value.\n${lines.map { "$it ${it.direction(col)},\n" }}\nDirections: $directions\nResults: $results" }
                 results.add(start..end)
             }
 
