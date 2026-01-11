@@ -70,9 +70,9 @@ object Day9 : Day {
     }
 
     override fun star2Run(): String {
-//        val lines = STAR1
+        val lines = STAR1
         // Area 24. One way to do this is between 9,5 and 2,3
-        val lines = EXAMPLE
+//        val lines = EXAMPLE
 
         val redTiles = lines.map { it.split(",").let { (a, b) -> Star2Point(a.toInt(), b.toInt()) } }
         val maxCol = redTiles.maxOf { it.x }
@@ -206,13 +206,15 @@ object Day9 : Day {
 
             var start = Int.MAX_VALUE
             var end = Int.MIN_VALUE
-            var directions: List<Int?> = mutableListOf()
+            var directions = mutableListOf<Int?>()
             fun reset() {
                 start = Int.MAX_VALUE
                 end = Int.MIN_VALUE
                 directions = mutableListOf()
             }
+            var i = 0
             lines.forEach { line ->
+                i++
                 val ax = line.pointA.x
                 val bx = line.pointB.x
                 val ay = line.pointA.y
@@ -230,61 +232,48 @@ object Day9 : Day {
                     }
                 } else {
                     val newDirection = when {
-                        ax == col -> ax.compareTo(bx)
-                        bx == col -> bx.compareTo(ax)
+                        ax == col -> if (ax < bx) 1 else -1
+                        bx == col -> if (bx < ax) 1 else -1
                         else -> null
-                    }.also {
-                        require(it != 0) { "Cannot be equal would be other code path" }
                     }
 
                     if (directions.isEmpty()) {
                         start = min(start, yMin)
-                        directions.plus(newDirection)
-                        return@forEach
-                    }
-
-                    if (directions.first() == null && newDirection == null) {
-                        end = max(end, yMin)
-                        results.add(start..end)
-                        reset()
-                        return@forEach
+                        directions.add(newDirection)
                     } else if (directions.first() == null) {
-                        if (directions.size == 1) {
-                            end = max(end, yMax)
-                            directions.plus(newDirection)
-                            return@forEach
+                        end = max(end, yMin)
+                        if (newDirection == null) {
+                            results.add(start..end)
+                            reset()
+                        } else if (directions.size == 1) {
+                            directions.add(newDirection)
                         } else {
                             val lastDirection = directions.last()
                             if (lastDirection == newDirection) {
-                                end = max(end, yMax)
-                                directions.plus(newDirection)
-                                return@forEach
+                                directions.add(newDirection)
                             } else {
                                 // diff directions
-                                end = max(end, yMax)
+                                //
+                                // ---
+                                // -\
+                                //  \-
                                 results.add(start..end)
                                 reset()
-                                return@forEach
                             }
                         }
                     } else {
+                        end = max(end, yMax)
                         val lastDirection = directions.last()
                         if (lastDirection == newDirection) {
-                            end = max(end, yMax)
                             results.add(start..end)
                             reset()
-                            return@forEach
+                        } else if (lastDirection == null) {
+                            // close now
+                            results.add(start..end)
+                            reset()
                         } else {
-                            end = max(end, yMax)
-                            if (lastDirection == null) {
-                                // close now
-                                results.add(start..end)
-                                reset()
-                                return@forEach
-                            } else {
-                                directions.plus(newDirection)
-                                // not closed yet
-                            }
+                            directions.add(newDirection)
+                            // not closed yet
                         }
                     }
                 }
@@ -293,8 +282,8 @@ object Day9 : Day {
             if (start == Int.MAX_VALUE && end == Int.MIN_VALUE) {
                 // We're good
             } else {
-                require(start != Int.MAX_VALUE) { "Col: $col, Start: $start and End: $end. Don't want start max_value.\n${lines.joinToString(",\n")}\nDirections: $directions\nResults: $results" }
-                require(end != Int.MIN_VALUE) { "Col: $col, Start: $start and End: $end. Don't want end min_value.\n${lines.joinToString(",\n")}\nDirections: $directions\nResults: $results" }
+                require(start != Int.MAX_VALUE) { "i: $i, Col: $col, Start: $start and End: $end. Don't want start max_value.\n${lines.joinToString(",\n")}\nDirections: $directions\nResults: $results" }
+                require(end != Int.MIN_VALUE) { "i: $i, Col: $col, Start: $start and End: $end. Don't want end min_value.\n${lines.joinToString(",\n")}\nDirections: $directions\nResults: $results" }
                 results.add(start..end)
             }
 
