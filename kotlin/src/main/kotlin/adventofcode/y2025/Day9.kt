@@ -70,9 +70,9 @@ object Day9 : Day {
     }
 
     override fun star2Run(): String {
-        val lines = STAR1
+//        val lines = STAR1
         // Area 24. One way to do this is between 9,5 and 2,3
-//        val lines = EXAMPLE
+        val lines = EXAMPLE
 
         val redTiles = lines.map { it.split(",").let { (a, b) -> Star2Point(a.toInt(), b.toInt()) } }
         val maxCol = redTiles.maxOf { it.x }
@@ -84,22 +84,16 @@ object Day9 : Day {
             val next = redTiles[iNext]
             val line = Star2Line(current, next)
 
-            if (current.x == next.x || current.y == next.y) {
-                // fine
-            } else {
+            if (current.x != next.x && current.y != next.y) {
                 throw IllegalStateException("Diagonal line: $line")
             }
 
-            if (current.x == next.x) {
-                colChecksLines[current.x].addLine(line)
-            } else {
-                val cX = current.x
-                val nX = next.x
-                val xMin = min(cX, nX)
-                val xMax = max(cX, nX)
-                (xMin..xMax).forEach { x ->
-                    colChecksLines[x].addLine(line)
-                }
+            val cX = current.x
+            val nX = next.x
+            val xMin = min(cX, nX)
+            val xMax = max(cX, nX)
+            (xMin..xMax).forEach { x ->
+                colChecksLines[x].addLine(line)
             }
         }
 
@@ -212,31 +206,86 @@ object Day9 : Day {
 
             var start = Int.MAX_VALUE
             var end = Int.MIN_VALUE
-            var previousY = Int.MIN_VALUE
+            var directions: List<Int?> = mutableListOf()
+            fun reset() {
+                start = Int.MAX_VALUE
+                end = Int.MIN_VALUE
+                directions = mutableListOf()
+            }
             lines.forEach { line ->
+                val ax = line.pointA.x
+                val bx = line.pointB.x
                 val ay = line.pointA.y
                 val by = line.pointB.y
                 val yMin = min(ay, by)
                 val yMax = max(ay, by)
-                if (line.pointA.x == line.pointB.x) {
+                if (ax == bx) {
                     // Either point or vertical line
                     start = min(start, yMin)
                     end = max(end, yMax)
-                    previousY = yMax
+                    if (directions.isEmpty()) {
+                        // usually would be a point
+                        results.add(start..end)
+                        reset()
+                    }
                 } else {
-                    val inside = start != Int.MAX_VALUE
-                    val onLine = previousY == yMin
-                    if (onLine) {
-                        // Nothing to do here
-                    } else if (inside) {
+                    val newDirection = when {
+                        ax == col -> ax.compareTo(bx)
+                        bx == col -> bx.compareTo(ax)
+                        else -> null
+                    }.also {
+                        require(it != 0) { "Cannot be equal would be other code path" }
+                    }
+
+                    if (directions.isEmpty()) {
+                        start = min(start, yMin)
+                        directions.plus(newDirection)
+                        return@forEach
+                    }
+
+                    if (directions.first() == null && newDirection == null) {
                         end = max(end, yMin)
                         results.add(start..end)
-                        start = Int.MAX_VALUE
-                        end = Int.MIN_VALUE
-                        previousY = Int.MIN_VALUE
+                        reset()
+                        return@forEach
+                    } else if (directions.first() == null) {
+                        if (directions.size == 1) {
+                            end = max(end, yMax)
+                            directions.plus(newDirection)
+                            return@forEach
+                        } else {
+                            val lastDirection = directions.last()
+                            if (lastDirection == newDirection) {
+                                end = max(end, yMax)
+                                directions.plus(newDirection)
+                                return@forEach
+                            } else {
+                                // diff directions
+                                end = max(end, yMax)
+                                results.add(start..end)
+                                reset()
+                                return@forEach
+                            }
+                        }
                     } else {
-                        start = min(start, yMin)
-                        previousY = yMin
+                        val lastDirection = directions.last()
+                        if (lastDirection == newDirection) {
+                            end = max(end, yMax)
+                            results.add(start..end)
+                            reset()
+                            return@forEach
+                        } else {
+                            end = max(end, yMax)
+                            if (lastDirection == null) {
+                                // close now
+                                results.add(start..end)
+                                reset()
+                                return@forEach
+                            } else {
+                                directions.plus(newDirection)
+                                // not closed yet
+                            }
+                        }
                     }
                 }
             }
@@ -244,8 +293,8 @@ object Day9 : Day {
             if (start == Int.MAX_VALUE && end == Int.MIN_VALUE) {
                 // We're good
             } else {
-                require(start != Int.MAX_VALUE) { "Col: $col, Start: $start and End: $end. Don't want start max_value.\n${lines.joinToString(",\n")}" }
-                require(end != Int.MIN_VALUE) { "Col: $col, Start: $start and End: $end. Don't want end min_value.\n${lines.joinToString(",\n")}" }
+                require(start != Int.MAX_VALUE) { "Col: $col, Start: $start and End: $end. Don't want start max_value.\n${lines.joinToString(",\n")}\nDirections: $directions\nResults: $results" }
+                require(end != Int.MIN_VALUE) { "Col: $col, Start: $start and End: $end. Don't want end min_value.\n${lines.joinToString(",\n")}\nDirections: $directions\nResults: $results" }
                 results.add(start..end)
             }
 
