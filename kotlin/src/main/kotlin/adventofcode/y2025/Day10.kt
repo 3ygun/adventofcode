@@ -5,7 +5,7 @@ import adventofcode.Day
 
 object Day10 : Day {
     override val day: Int = 10
-    override val debug: Boolean get() = true
+    override val debug: Boolean get() = false
 
     internal val STAR1 get() = DataLoader.readNonBlankLinesFrom("/y2025/Day10Star1.txt")
 
@@ -17,8 +17,10 @@ object Day10 : Day {
     """.trimIndent().lines()
 
     override fun star1Run(): String {
+        // 481
+        val lines = STAR1
         // 2 + 3 + 2 = 7
-        val lines = EXAMPLE
+//        val lines = EXAMPLE
 
         val machines = lines.map { Star1Machine.from(it) }
         if (debug) println("machines: [\n${machines.joinToString(",\n")}\n]")
