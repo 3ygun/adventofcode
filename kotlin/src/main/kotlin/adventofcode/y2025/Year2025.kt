@@ -17,5 +17,6 @@ object Year2025 : YearRunner {
         Day7,
         Day8,
         Day9,
+        Day10,
     )
 }
