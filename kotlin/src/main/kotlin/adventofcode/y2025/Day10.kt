@@ -89,30 +89,33 @@ object Day10 : Day {
             return "Star1Machine(desiredIndicatorLight = $desiredIndicatorLight = ${desiredIndicatorLight.toBinary()}, wiringButtons = $wb, joltageRequirements = $joltageRequirements, wiringButtonsAsNumbers = $wiringButtons)"
         }
 
+        private var checksDone = 0
+
         private fun decendAndCheck(
             maxDepth: Int,
             currentDepth: Int,
-            current: Int,
-            skipIndex: Int = -1,
+            indicatorLight: Int,
+            skipButton: Int = 0,
         ): MutableList<Int>? {
-            for ((index, button) in wiringButtons.withIndex()) {
-                if (index == skipIndex) {
+            for (button in wiringButtons) {
+                if (button == skipButton) {
                     // Would just be reversing previous operation
                     // Mainly doing to "tree skip" if depth > 2
                     continue
                 }
 
-                val new = current xor button
-                if (maxDepth == currentDepth) {
+                checksDone++
+                val newIndicatorLight = indicatorLight xor button
+                if (currentDepth < maxDepth) {
                     val result = decendAndCheck(
                         maxDepth = maxDepth,
                         currentDepth = currentDepth + 1,
-                        current = new,
-                        skipIndex = index,
+                        indicatorLight = newIndicatorLight,
+                        skipButton = button,
                     ) ?: continue
                     result.add(button)
                     return result
-                } else if (new == desiredIndicatorLight) {
+                } else if (newIndicatorLight == desiredIndicatorLight) {
                     return mutableListOf(button)
                 }
                 // look at the next option
@@ -123,14 +126,15 @@ object Day10 : Day {
         fun calculateButtonMinimum(): Int {
             require (0 != desiredIndicatorLight) { "Unset desired indicator lights are not supported." }
 
+            checksDone = 0
             var solution = emptyList<Int>()
             var depth = 1
             while (depth <= 100) {
                 val result = decendAndCheck(
                     maxDepth = depth,
                     currentDepth = 1,
-                    current = 0,
-                    skipIndex = -1,
+                    indicatorLight = 0,
+                    skipButton = 0,
                 )
                 if (result != null) {
                     solution = result.toList().reversed()
@@ -139,7 +143,7 @@ object Day10 : Day {
                 depth++
             }
 
-            require(solution.isNotEmpty()) { "No solution found after $depth combinations for machine: $this" }
+            require(solution.isNotEmpty()) { "No solution found after $depth checking $checksDone combinations for machine: $this" }
 
             if (debug) println("For machine: $this pressing ${solution.size} buttons solves it (specifically: ${solution.map { it.toBinary() }})")
             return solution.size
