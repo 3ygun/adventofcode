@@ -55,21 +55,19 @@ object Day10 : Day {
                     require(sWiringButton.endsWith(")")) { "Invalid wiring button: $sWiringButton want end with ')' of line: $line" }
 
                     val nums = sWiringButton.substring(1).substringBefore(')').split(",").map { it.toInt() }
-                    var currentIndex = nums.first()
+                    var i = 0
                     var result = nums.fold(0) { acc, num ->
                         var result = acc
-                        while (currentIndex < num) {
-                            result = result shl 0
-                            currentIndex++
+                        while (i < num) {
+                            result = result shl 1
+                            i++
                         }
-                        currentIndex++
-                        result shl 1
+                        result or 1
                     }
-
-//                    while (currentIndex < size) {
-//                        result = result shl 0
-//                        currentIndex++
-//                    }
+                    while (i < (size - 1)) {
+                        result = result shl 1
+                        i++
+                    }
                     result
                 }
 
