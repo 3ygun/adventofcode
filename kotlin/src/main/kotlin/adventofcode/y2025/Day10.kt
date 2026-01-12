@@ -86,7 +86,7 @@ object Day10 : Day {
 
         override fun toString(): String {
             val wb = wiringButtons.joinToString(",") { it.toBinary() }
-            return "Star1Machine(desiredIndicatorLight = ${desiredIndicatorLight.toBinary()}, wiringButtons = $wb, joltageRequirements = $joltageRequirements)"
+            return "Star1Machine(desiredIndicatorLight = $desiredIndicatorLight = ${desiredIndicatorLight.toBinary()}, wiringButtons = $wb, joltageRequirements = $joltageRequirements, wiringButtonsAsNumbers = $wiringButtons)"
         }
 
         private fun decendAndCheck(
@@ -109,11 +109,9 @@ object Day10 : Day {
                         currentDepth = currentDepth + 1,
                         current = new,
                         skipIndex = index,
-                    )
-                    if (result != null) {
-                        result.add(button)
-                        return result
-                    }
+                    ) ?: continue
+                    result.add(button)
+                    return result
                 } else if (new == desiredIndicatorLight) {
                     return mutableListOf(button)
                 }
