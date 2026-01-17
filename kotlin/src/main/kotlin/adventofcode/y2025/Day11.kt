@@ -4,6 +4,7 @@ import adventofcode.Day
 
 object Day11 : Day {
     override val day: Int get() = 11
+    override val debug: Boolean get() = true
 
     private val EXAMPLE = """
         aaa: you hhh
@@ -25,17 +26,67 @@ object Day11 : Day {
         val devices: Map<String, List<String>> = lines
             .map { line ->
                 val (name, sConnections) = line.split(':', limit = 2)
-                val connections = sConnections.trim().split(' ')
+                val connections = sConnections.trim().split(' ').toSet().toList()
                 name to connections
             }
             .associateBy({ it.first }) { it.second }
 
-        devices.forEach { (k, v) ->
-            println("$k: $v")
+//        if (debug) {
+//            devices.forEach { (k, v) ->
+//                println("$k: $v")
+//            }
+//        }
+
+        val paths: MutableSet<List<String>> = mutableSetOf()
+        tailrec fun recurse(node: Day11Star1Node, level: Int = 0) {
+            val name = node.name
+            if (name == "out") {
+                paths.add(node.printPath())
+                return
+            } else if (level >= 10_000) {
+                println("Found a loop, giving up")
+                return
+            }
+
+            val found = requireNotNull(devices[name]) { "No device found for $name" }
+            if (found.size == 1) {
+                val current = Day11Star1Node(found.first(), node)
+                return recurse(current)
+            } else {
+                for (nextName in found) {
+                    val current = Day11Star1Node(nextName, node)
+                    // comfortable that this isn't a "tail call"
+                    recurse(current)
+                }
+                return
+            }
         }
 
-        val paths = 0
-        return "Paths: $paths"
+        val name = "you"
+        val start = Day11Star1Node(name)
+        val found = requireNotNull(devices[name]) { "No device found for $name" }
+        for (nextName in found) {
+            val current = Day11Star1Node(nextName, start)
+            // comfortable that this isn't a "tail call"
+            recurse(current)
+        }
+
+        return "Paths: ${paths.size}"
+    }
+
+    class Day11Star1Node(
+        val name: String,
+        val previousNode: Day11Star1Node? = null,
+    ) {
+        fun printPath(): List<String> {
+            val result = mutableListOf<String>()
+            var current: Day11Star1Node? = this
+            while (current != null) {
+                result.add(current.name)
+                current = current.previousNode
+            }
+            return result
+        }
     }
 
     override fun star2Run(): String {
