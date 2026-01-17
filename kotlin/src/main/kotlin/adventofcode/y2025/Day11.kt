@@ -131,28 +131,18 @@ object Day11 : Day {
 //                println("$k: $v")
 //            }
 //        }
-        fun checkPath(
-            path: List<String>,
-        ): Boolean {
-            var hasFft = false
-            var hasDac = false
-            path.forEach { name ->
-                when (name) {
-                    "fft" -> hasFft = true
-                    "dac" -> hasDac = true
-                }
-            }
-            return hasFft && hasDac
-        }
 
-        val paths: MutableSet<List<String>> = mutableSetOf()
+        val paths: MutableList<Int> = mutableListOf()
         @Suppress("NON_TAIL_RECURSIVE_CALL")
-        fun recurse(node: Day11Star1Node, level: Int = 0) {
-            val name = node.name
+        fun recurse(
+            name: String,
+            level: Int,
+            fft: Boolean = false,
+            dac: Boolean = false,
+        ) {
             if (name == "out") {
-                val path = node.printPath()
-                if (checkPath(path)) {
-                    paths.add(path)
+                if (fft && dac) {
+                    paths.add(level)
                 }
                 return
             } else if (level >= 500) {
@@ -160,30 +150,31 @@ object Day11 : Day {
                 return
             }
 
+            val nextFft = fft || name == "fft"
+            val nextDac = dac || name == "dac"
+
             val found = requireNotNull(devices[name]) { "No device found for $name" }
             if (found.size == 1) {
-                val current = Day11Star1Node(found.first(), node)
-                return recurse(current, level + 1)
+                val current = found.first()
+                return recurse(current, level + 1, fft = nextFft, dac = nextDac)
             } else {
                 for (nextName in found) {
-                    val current = Day11Star1Node(nextName, node)
+                    val current = nextName
                     // comfortable that this isn't a "tail call"
-                    recurse(current, level + 1)
+                    recurse(current, level + 1, fft = nextFft, dac = nextDac)
                 }
                 return
             }
         }
 
         val name = "svr" // from server
-        val start = Day11Star1Node(name)
         val found = requireNotNull(devices[name]) { "No device found for $name" }
         for (nextName in found) {
-            val current = Day11Star1Node(nextName, start)
             // comfortable that this isn't a "tail call"
-            recurse(current)
+            recurse(nextName, level = 2)
         }
 
-        val maxPathLength = paths.maxOf { it.size }
+        val maxPathLength = paths.maxOf { it }
         return "Paths with dac and fft: ${paths.size} (longest path: ${maxPathLength})"
     }
 }
