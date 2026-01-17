@@ -2,10 +2,11 @@ package adventofcode.y2025
 
 import adventofcode.DataLoader
 import adventofcode.Day
+import kotlin.math.min
 
 object Day11 : Day {
     override val day: Int get() = 11
-    override val debug: Boolean get() = true
+    override val debug: Boolean get() = false
 
     internal val STAR1 get() = DataLoader.readNonBlankLinesFrom("/y2025/Day11Star1.txt")
 
@@ -97,7 +98,7 @@ object Day11 : Day {
         return "Paths: ${paths.size} (longest path: ${maxPathLength})"
     }
 
-    class Day11Star1Node(
+    private class Day11Star1Node(
         val name: String,
         val previousNode: Day11Star1Node? = null,
     ) {
@@ -113,7 +114,7 @@ object Day11 : Day {
     }
 
     override fun star2Run(): String {
-
+        // 417190406827152
         val lines = STAR1
         // 2 paths
 //        val lines = EXAMPLE_STAR2
@@ -132,49 +133,109 @@ object Day11 : Day {
 //            }
 //        }
 
-        val paths: MutableList<Int> = mutableListOf()
+        val cachedEnds = mutableMapOf<String, Day11Star2Cache>()
+
+        val paths: MutableSet<List<String>> = mutableSetOf()
         @Suppress("NON_TAIL_RECURSIVE_CALL")
         fun recurse(
-            name: String,
+            node: Day11Star1Node,
             level: Int,
             fft: Boolean = false,
             dac: Boolean = false,
-        ) {
+        ): Day11Star2Cache {
+            val name = node.name
             if (name == "out") {
                 if (fft && dac) {
-                    paths.add(level)
+                    val path = node.printPath()
+                    paths.add(path)
+                    if (debug) println(path)
                 }
-                return
+                return Day11Star2Cache(numPathsOut = 1)
             } else if (level >= 500) {
                 println("Found a loop, giving up")
-                return
+                return Day11Star2Cache()
             }
 
             val nextFft = fft || name == "fft"
             val nextDac = dac || name == "dac"
 
+            // Have we already computed this path?
+            val cache = cachedEnds[name]
+            if (cache != null) return cache
+
             val found = requireNotNull(devices[name]) { "No device found for $name" }
             if (found.size == 1) {
-                val current = found.first()
+                val current = Day11Star1Node(found.first(), node)
                 return recurse(current, level + 1, fft = nextFft, dac = nextDac)
+                    .let { it ->
+                        val cacheData = it.cloneWith(name)
+                        cachedEnds[name] = cacheData
+                        cacheData
+                    }
             } else {
+                val results = mutableListOf<Day11Star2Cache>()
                 for (nextName in found) {
-                    val current = nextName
+                    val current = Day11Star1Node(nextName, node)
                     // comfortable that this isn't a "tail call"
                     recurse(current, level + 1, fft = nextFft, dac = nextDac)
+                        .let { results.add(it.cloneWith(name)) }
                 }
-                return
+
+                val cacheData = results.fold(Day11Star2Cache()) { acc, cache ->
+                    Day11Star2Cache(
+                        numPathsOut = acc.numPathsOut + cache.numPathsOut,
+                        numPathsWhichAddFft = acc.numPathsWhichAddFft + cache.numPathsWhichAddFft,
+                        numPathsWhichAddDac = acc.numPathsWhichAddDac + cache.numPathsWhichAddDac,
+                        numPathsWithBoth = acc.numPathsWithBoth + cache.numPathsWithBoth,
+                    )
+                }
+                cachedEnds[name] = cacheData
+                return cacheData
             }
         }
 
         val name = "svr" // from server
+        val start = Day11Star1Node(name)
         val found = requireNotNull(devices[name]) { "No device found for $name" }
+        val results = mutableListOf<Day11Star2Cache>()
         for (nextName in found) {
+            val current = Day11Star1Node(nextName, start)
             // comfortable that this isn't a "tail call"
-            recurse(nextName, level = 2)
+            recurse(current, level = 2)
+                .let { results.add(it.cloneWith(name)) }
         }
 
-        val maxPathLength = paths.maxOf { it }
-        return "Paths with dac and fft: ${paths.size} (longest path: ${maxPathLength})"
+        val cacheData = results.fold(Day11Star2Cache()) { acc, cache ->
+            Day11Star2Cache(
+                numPathsOut = acc.numPathsOut + cache.numPathsOut,
+                numPathsWhichAddFft = acc.numPathsWhichAddFft + cache.numPathsWhichAddFft,
+                numPathsWhichAddDac = acc.numPathsWhichAddDac + cache.numPathsWhichAddDac,
+                numPathsWithBoth = acc.numPathsWithBoth + cache.numPathsWithBoth,
+            )
+        }
+
+        return "Paths with dac and fft: ${cacheData.numPathsWithBoth}"
+    }
+
+    private class Day11Star2Cache(
+        val numPathsOut: Long = 0,
+        val numPathsWhichAddFft: Long = 0,
+        val numPathsWhichAddDac: Long = 0,
+        val numPathsWithBoth: Long = 0,
+    ) {
+        fun cloneWith(name: String): Day11Star2Cache {
+            val isFft = name == "fft"
+            val isDac = name == "dac"
+            if (!(isFft || isDac)) return this
+
+            val numFft = if (isFft) numPathsOut else numPathsWhichAddFft
+            val numDac = if (isDac) numPathsOut else numPathsWhichAddDac
+            return Day11Star2Cache(
+                numPathsOut = numPathsOut,
+                numPathsWhichAddFft = numFft,
+                numPathsWhichAddDac = numDac,
+                numPathsWithBoth = min(numFft, numDac),
+            )
+        }
     }
 }
