@@ -1,10 +1,13 @@
 package adventofcode.y2025
 
+import adventofcode.DataLoader
 import adventofcode.Day
 
 object Day11 : Day {
     override val day: Int get() = 11
     override val debug: Boolean get() = true
+
+    internal val STAR1 get() = DataLoader.readNonBlankLinesFrom("/y2025/Day11Star1.txt")
 
     private val EXAMPLE = """
         aaa: you hhh
@@ -20,8 +23,10 @@ object Day11 : Day {
     """.trimIndent().lines()
 
     override fun star1Run(): String {
+        // Paths: 643 (longest path: 8) for me
+        val lines = STAR1
         // 5 paths
-        val lines = EXAMPLE
+//        val lines = EXAMPLE
 
         val devices: Map<String, List<String>> = lines
             .map { line ->
@@ -71,7 +76,8 @@ object Day11 : Day {
             recurse(current)
         }
 
-        return "Paths: ${paths.size}"
+        val maxPathLength = paths.maxOf { it.size }
+        return "Paths: ${paths.size} (longest path: ${maxPathLength})"
     }
 
     class Day11Star1Node(
