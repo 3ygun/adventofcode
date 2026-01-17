@@ -59,12 +59,13 @@ object Day11 : Day {
 //        }
 
         val paths: MutableSet<List<String>> = mutableSetOf()
-        fun recurse(node: Day11Star1Node, level: Int = 0) {
+        @Suppress("NON_TAIL_RECURSIVE_CALL")
+        tailrec fun recurse(node: Day11Star1Node, level: Int = 0) {
             val name = node.name
             if (name == "out") {
                 paths.add(node.printPath())
                 return
-            } else if (level >= 10_000) {
+            } else if (level >= 500) {
                 println("Found a loop, giving up")
                 return
             }
@@ -145,10 +146,7 @@ object Day11 : Day {
         }
 
         val paths: MutableSet<List<String>> = mutableSetOf()
-        var recurseNow: (Day11Star1Node, Int) -> Unit = { _, _ -> }
-        fun recurseNonTail(node: Day11Star1Node, level: Int = 0) {
-            recurseNow(node, level)
-        }
+        @Suppress("NON_TAIL_RECURSIVE_CALL")
         fun recurse(node: Day11Star1Node, level: Int = 0) {
             val name = node.name
             if (name == "out") {
@@ -157,7 +155,7 @@ object Day11 : Day {
                     paths.add(path)
                 }
                 return
-            } else if (level >= 10_000) {
+            } else if (level >= 500) {
                 println("Found a loop, giving up")
                 return
             }
@@ -175,7 +173,6 @@ object Day11 : Day {
                 return
             }
         }
-        recurseNow = ::recurse
 
         val name = "svr" // from server
         val start = Day11Star1Node(name)
