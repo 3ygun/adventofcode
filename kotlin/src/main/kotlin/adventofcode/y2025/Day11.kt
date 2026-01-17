@@ -127,37 +127,19 @@ object Day11 : Day {
             }
             .associateBy({ it.first }) { it.second }
 
-//        if (debug) {
-//            devices.forEach { (k, v) ->
-//                println("$k: $v")
-//            }
-//        }
-
         val cachedEnds = mutableMapOf<String, Day11Star2Cache>()
-
-        val paths: MutableSet<List<String>> = mutableSetOf()
         @Suppress("NON_TAIL_RECURSIVE_CALL")
         fun recurse(
             node: Day11Star1Node,
             level: Int,
-            fft: Boolean = false,
-            dac: Boolean = false,
         ): Day11Star2Cache {
             val name = node.name
             if (name == "out") {
-                if (fft && dac) {
-                    val path = node.printPath()
-                    paths.add(path)
-                    if (debug) println(path)
-                }
                 return Day11Star2Cache(numPathsOut = 1)
             } else if (level >= 500) {
                 println("Found a loop, giving up")
                 return Day11Star2Cache()
             }
-
-            val nextFft = fft || name == "fft"
-            val nextDac = dac || name == "dac"
 
             // Have we already computed this path?
             val cache = cachedEnds[name]
@@ -166,7 +148,7 @@ object Day11 : Day {
             val found = requireNotNull(devices[name]) { "No device found for $name" }
             if (found.size == 1) {
                 val current = Day11Star1Node(found.first(), node)
-                return recurse(current, level + 1, fft = nextFft, dac = nextDac)
+                return recurse(current, level + 1)
                     .let { it ->
                         val cacheData = it.cloneWith(name)
                         cachedEnds[name] = cacheData
@@ -177,7 +159,7 @@ object Day11 : Day {
                 for (nextName in found) {
                     val current = Day11Star1Node(nextName, node)
                     // comfortable that this isn't a "tail call"
-                    recurse(current, level + 1, fft = nextFft, dac = nextDac)
+                    recurse(current, level + 1)
                         .let { results.add(it.cloneWith(name)) }
                 }
 
